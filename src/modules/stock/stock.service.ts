@@ -1,0 +1,83 @@
+import { Injectable } from '@nestjs/common';
+import { CreateStockDto } from './dto/create-stock.dto';
+import { UpdateStockDto } from './dto/update-stock.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ILike, Repository } from 'typeorm';
+import { Stock } from './entities/stock.entity';
+import { UtilityService } from 'src/core/utility/utility.service';
+import { StockListDto } from './dto/stock-list.dto';
+
+@Injectable()
+export class StockService {
+  constructor(
+    @InjectRepository(Stock)
+    private stockRepository: Repository<Stock>,
+    private utilityService: UtilityService
+  ) { }
+  create(createStockDto: CreateStockDto) {
+    return this.stockRepository.save(createStockDto);
+  }
+
+  async findAll(search: string, currentPage: number, perPage: number) {
+    let [data, toatlLength] = await this.stockRepository.findAndCount({
+      where: [
+        { stock_code: ILike(`%${search}%`) }
+      ],
+      order: { created_on: 'DESC' },
+      skip: currentPage * perPage,
+      take: perPage,
+      relations: ['product', 'supplier', 'unit']
+    });
+    let stockList: StockListDto[] = this.convertStocksToList(data);
+    return this.utilityService.createPaginationList(stockList, currentPage, perPage, toatlLength)
+  }
+
+  async findByProduct(product_id: string, search: string, currentPage: number, perPage: number) {
+    let [data, toatlLength] = await this.stockRepository.findAndCount({
+      where: [
+        { product: { product_id: product_id }, stock_code: ILike(`%${search}%`) }
+      ],
+      order: { created_on: 'DESC' },
+      skip: currentPage * perPage,
+      take: perPage,
+      relations: ['product', 'supplier', 'unit']
+    });
+    let stockList: StockListDto[] = this.convertStocksToList(data);
+    return this.utilityService.createPaginationList(stockList, currentPage, perPage, toatlLength)
+  }
+
+  findOne(id: string) {
+    return this.stockRepository.findOne({ where: { stock_id: id } });
+  }
+
+  update(id: string, updateStockDto: UpdateStockDto) {
+    return this.stockRepository.update({ stock_id: id }, updateStockDto)
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} stock`;
+  }
+
+  private convertStocksToList(stocks: Stock[]): StockListDto[] {
+    let nfObject = new Intl.NumberFormat('en-US');
+    let stockList: StockListDto[] = [];
+    stocks.forEach((stock, index) => {
+      let stockObj: StockListDto = {
+        stock_id: stock.stock_id,
+        stock_code: stock.stock_code,
+        stock_product: stock.product.product_name + "(" + stock.product.product_code + ")",
+        stock_supplier: stock.supplier.supplier_name + "(" + stock.supplier.supplier_phone + ")",
+        stock_unit: stock.unit.unit_symbol,
+        quantity: stock.quantity,
+        buying_price: nfObject.format(stock.buying_price) + " MMK",
+        selling_price: nfObject.format(stock.selling_price) + " MMK",
+        fix_price: nfObject.format(stock.fix_price) + " MMMK",
+        note: stock.note,
+        created_on: stock.created_on
+      }
+      stockList.push(stockObj);
+    })
+    return stockList;
+  }
+
+}
