@@ -29,6 +29,11 @@ export class StockTrackController {
     return this.stockTrackService.findOne(id);
   }
 
+  @Get('/getInfo/:id')
+  findInfo(@Param('id') id: string) {
+    return this.stockTrackService.getStockTrackInfo(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateStockTrackDto: UpdateStockTrackDto) {
     return this.stockTrackService.update(id, updateStockTrackDto);

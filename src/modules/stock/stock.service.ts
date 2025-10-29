@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -46,8 +46,12 @@ export class StockService {
     return this.utilityService.createPaginationList(stockList, currentPage, perPage, toatlLength)
   }
 
-  findOne(id: string) {
-    return this.stockRepository.findOne({ where: { stock_id: id } });
+  async findOne(id: string) {
+    let stock = await this.stockRepository.findOne({ where: { stock_id: id }, relations: ['product', 'supplier', 'unit'] });
+    if (!stock) {
+      throw new HttpException('Stock not found', HttpStatus.NOT_FOUND)
+    }
+    return this.convertStockToViewDto(stock);
   }
 
   update(id: string, updateStockDto: UpdateStockDto) {
@@ -59,25 +63,30 @@ export class StockService {
   }
 
   private convertStocksToList(stocks: Stock[]): StockListDto[] {
-    let nfObject = new Intl.NumberFormat('en-US');
     let stockList: StockListDto[] = [];
     stocks.forEach((stock, index) => {
-      let stockObj: StockListDto = {
-        stock_id: stock.stock_id,
-        stock_code: stock.stock_code,
-        stock_product: stock.product.product_name + "(" + stock.product.product_code + ")",
-        stock_supplier: stock.supplier.supplier_name + "(" + stock.supplier.supplier_phone + ")",
-        stock_unit: stock.unit.unit_symbol,
-        quantity: stock.quantity,
-        buying_price: nfObject.format(stock.buying_price) + " MMK",
-        selling_price: nfObject.format(stock.selling_price) + " MMK",
-        fix_price: nfObject.format(stock.fix_price) + " MMMK",
-        note: stock.note,
-        created_on: stock.created_on
-      }
+      let stockObj: StockListDto = this.convertStockToViewDto(stock);
       stockList.push(stockObj);
     })
     return stockList;
+  }
+
+  private convertStockToViewDto(stock: Stock): StockListDto {
+    let nfObject = new Intl.NumberFormat('en-US');
+    let stockObj: StockListDto = {
+      stock_id: stock.stock_id,
+      stock_code: stock.stock_code,
+      stock_product: stock.product.product_name + "(" + stock.product.product_code + ")",
+      stock_supplier: stock.supplier.supplier_name + "(" + stock.supplier.supplier_phone + ")",
+      stock_unit: stock.unit.unit_symbol,
+      quantity: stock.quantity,
+      buying_price: nfObject.format(stock.buying_price) + " MMK",
+      selling_price: nfObject.format(stock.selling_price) + " MMK",
+      fix_price: nfObject.format(stock.fix_price) + " MMMK",
+      note: stock.note,
+      created_on: stock.created_on
+    }
+    return stockObj;
   }
 
 }

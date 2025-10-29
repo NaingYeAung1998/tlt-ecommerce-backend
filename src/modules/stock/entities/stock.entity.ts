@@ -1,9 +1,10 @@
 import { Category } from "src/modules/category/entities/category.entity";
 import { Grade } from "src/modules/grade/entities/grade.entity";
 import { Product } from "src/modules/product/entities/product.entity";
+import { StockTrack } from "src/modules/stock_track/entities/stock_track.entity";
 import { Supplier } from "src/modules/supplier/entities/supplier.entity";
 import { Unit } from "src/modules/unit/entities/unit.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Stock {
@@ -49,4 +50,7 @@ export class Stock {
     @ManyToOne(() => Supplier)
     @JoinColumn({ name: 'supplier_id' })
     supplier: Supplier;
+
+    @OneToMany(() => StockTrack, stock_track => stock_track.stock)
+    stock_tracks: StockTrack[];
 }

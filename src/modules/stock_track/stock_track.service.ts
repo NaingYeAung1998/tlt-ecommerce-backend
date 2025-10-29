@@ -1,19 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateStockTrackDto } from './dto/create-stock_track.dto';
 import { UpdateStockTrackDto } from './dto/update-stock_track.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { StockTrack } from './entities/stock_track.entity';
+import { StockTrack, StockTrackStatus } from './entities/stock_track.entity';
 import { ILike, Repository } from 'typeorm';
 import { UtilityService } from 'src/core/utility/utility.service';
+import { StockService } from '../stock/stock.service';
+import { StockTrackInfoDto, StockTrackListDto } from './dto/stock-track-list.dto';
+
 
 @Injectable()
 export class StockTrackService {
   constructor(
     @InjectRepository(StockTrack)
     private stockTrackRepository: Repository<StockTrack>,
-    private utilityService: UtilityService
+    private utilityService: UtilityService,
+    private stockService: StockService
   ) { }
-  create(createStockTrackDto: CreateStockTrackDto) {
+  async create(createStockTrackDto: CreateStockTrackDto) {
+    let stockTrackInfo = await this.getStockTrackInfo(createStockTrackDto.stock.stock_id)
+
+    if (createStockTrackDto.status == StockTrackStatus.DELIVERD) {
+      if ((stockTrackInfo.total_delivered + parseInt(createStockTrackDto.quantity.toString())) > parseInt(stockTrackInfo.quantity.toString())) {
+        throw new HttpException('Deliverable quantity exceeds', HttpStatus.BAD_REQUEST);
+      }
+    }
+    if (createStockTrackDto.status == StockTrackStatus.STORED) {
+      if ((stockTrackInfo.total_stored + parseInt(createStockTrackDto.quantity.toString())) > parseInt(stockTrackInfo.quantity.toString())) {
+        throw new HttpException('Storeable quantity exceeds', HttpStatus.BAD_REQUEST);
+      }
+    }
     return this.stockTrackRepository.save(createStockTrackDto);
   }
 
@@ -36,36 +52,91 @@ export class StockTrackService {
 
   async findByStock(stock_id: string, search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
-      return await this.stockTrackRepository.find({
-        where: { stock: { stock_id: stock_id, note: ILike(`%${search}%`) } },
-        order: { checked_date: 'DESC' }
+      let data = await this.stockTrackRepository.find({
+        where: [{ stock: { stock_id: stock_id } }, { note: ILike(`%${search}%`) }],
+        order: { checked_date: 'DESC' },
+        relations: ['stock', 'warehouse']
       }
       );
+      return this.convertStockTrackListsToViewListDto(data)
     } else {
       let [data, toatlLength] = await this.stockTrackRepository.findAndCount({
         where: [
-          { stock: { stock_id: stock_id }, note: ILike(`%${search}%`) }
+          { stock: { stock_id: stock_id } }, { note: ILike(`%${search}%`) }
         ],
         order: { created_on: 'DESC' },
         skip: currentPage * perPage,
         take: perPage,
-        relations: ['stock']
+        relations: ['stock', 'warehouse']
       });
-      return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength)
+      let trackViewList = this.convertStockTrackListsToViewListDto(data)
+      return this.utilityService.createPaginationList(trackViewList, currentPage, perPage, toatlLength)
     }
 
   }
 
+  async getStockTrackInfo(stock_id: string) {
+    let stockInfo: StockTrackInfoDto = await this.stockService.findOne(stock_id);
+    let stockTracks = await this.stockTrackRepository.find({ where: { stock: { stock_id: stock_id } }, relations: ['stock'] });
+    stockInfo.total_delivered = 0;
+    stockInfo.total_stored = 0;
+    //change to query builder later
+    stockTracks.forEach((track) => {
+      if (track.status == StockTrackStatus.DELIVERD) {
+        stockInfo.total_delivered += parseInt(track.quantity.toString());
+      } else if (track.status == StockTrackStatus.STORED) {
+        stockInfo.total_stored += parseInt(track.quantity.toString());
+      }
+    })
 
-  findOne(id: string) {
-    return this.stockTrackRepository.findOne({ where: { track_id: id } })
+    return stockInfo;
   }
 
-  update(id: string, updateStockTrackDto: UpdateStockTrackDto) {
+
+  findOne(id: string) {
+    return this.stockTrackRepository.findOne({ where: { track_id: id }, relations: ['warehouse'] })
+  }
+
+  async update(id: string, updateStockTrackDto: UpdateStockTrackDto) {
+    let stockTrackInfo = await this.getStockTrackInfo(updateStockTrackDto.stock.stock_id)
+    let trackInfo = await this.findOne(id);
+
+    if (updateStockTrackDto.status == StockTrackStatus.DELIVERD) {
+      if ((stockTrackInfo.total_delivered + parseInt(updateStockTrackDto.quantity.toString()) - parseInt(trackInfo.quantity.toString())) > parseInt(stockTrackInfo.quantity.toString())) {
+        throw new HttpException('Deliverable quantity exceeds', HttpStatus.BAD_REQUEST);
+      }
+    }
+    if (updateStockTrackDto.status == StockTrackStatus.STORED) {
+      if ((stockTrackInfo.total_stored + parseInt(updateStockTrackDto.quantity.toString()) - parseInt(trackInfo.quantity.toString())) > parseInt(stockTrackInfo.quantity.toString())) {
+        throw new HttpException('Storeable quantity exceeds', HttpStatus.BAD_REQUEST);
+      }
+    }
     return this.stockTrackRepository.update({ track_id: id }, updateStockTrackDto);
   }
 
   remove(id: number) {
     return `This action removes a #${id} stockTrack`;
+  }
+
+  convertStockTrackListsToViewListDto(tracks: StockTrack[]) {
+    let trackList: StockTrackListDto[] = [];
+    tracks.forEach((track, index) => {
+      let trackObj: StockTrackListDto = this.convertStockTrackToViewDto(track);
+      trackList.push(trackObj);
+    })
+    return trackList;
+  }
+
+  convertStockTrackToViewDto(track: StockTrack) {
+    let stockTrackObj: StockTrackListDto = {
+      track_id: track.track_id,
+      quantity: track.quantity,
+      checked_date: track.checked_date,
+      status: track.status,
+      created_on: track.created_on,
+      note: track.note,
+      warehouse_name: track.warehouse?.warehouse_name
+    }
+    return stockTrackObj;
   }
 }

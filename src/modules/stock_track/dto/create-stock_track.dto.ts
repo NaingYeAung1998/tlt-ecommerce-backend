@@ -6,6 +6,11 @@ export class CreateStockTrackStockDto {
     stock_id: string;
 }
 
+export class CreateStockTrackWarehouseDto {
+    @ApiProperty()
+    warehouse_id: string;
+}
+
 export class CreateStockTrackDto {
     @ApiProperty()
     quantity: number;
@@ -13,4 +18,10 @@ export class CreateStockTrackDto {
     checked_date: Date;
     @ApiProperty()
     status: StockTrackStatus
+    @ApiProperty()
+    note?: string
+    @ApiProperty()
+    stock: CreateStockTrackStockDto;
+    @ApiProperty()
+    warehouse: CreateStockTrackWarehouseDto;
 }

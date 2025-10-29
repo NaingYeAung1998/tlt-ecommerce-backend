@@ -9,5 +9,6 @@ import { UtilityModule } from 'src/core/utility/utility.module';
   imports: [TypeOrmModule.forFeature([Stock]), UtilityModule],
   controllers: [StockController],
   providers: [StockService],
+  exports: [StockService]
 })
 export class StockModule { }

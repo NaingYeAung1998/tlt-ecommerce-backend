@@ -29,7 +29,7 @@ export class StockTrack {
     deleted_on: Date;
 
     //Foreign keys
-    @ManyToOne(() => Stock)
+    @ManyToOne(() => Stock, stock => stock.stock_tracks)
     @JoinColumn({ name: 'stock_id' })
     stock: Stock;
 
