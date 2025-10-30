@@ -9,7 +9,7 @@ export class StockPayment {
     @Column({ type: 'decimal' })
     amount: number;
 
-    @Column({ type: 'datetime' })
+    @Column({ type: 'date' })
     payment_date: Date;
 
     @Column()

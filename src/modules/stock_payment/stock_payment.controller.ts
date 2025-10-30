@@ -26,12 +26,17 @@ export class StockPaymentController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.stockPaymentService.findOne(+id);
+    return this.stockPaymentService.findOne(id);
+  }
+
+  @Get('/getInfo/:id')
+  findInfo(@Param('id') id: string) {
+    return this.stockPaymentService.getStockPaymentInfo(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateStockPaymentDto: UpdateStockPaymentDto) {
-    return this.stockPaymentService.update(+id, updateStockPaymentDto);
+    return this.stockPaymentService.update(id, updateStockPaymentDto);
   }
 
   @Delete(':id')

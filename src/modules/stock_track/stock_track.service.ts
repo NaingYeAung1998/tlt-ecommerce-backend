@@ -6,7 +6,7 @@ import { StockTrack, StockTrackStatus } from './entities/stock_track.entity';
 import { ILike, Repository } from 'typeorm';
 import { UtilityService } from 'src/core/utility/utility.service';
 import { StockService } from '../stock/stock.service';
-import { StockTrackInfoDto, StockTrackListDto } from './dto/stock-track-list.dto';
+import { StockTrackInfoDto, StockTrackListDto } from './dto/stock_track-list.dto';
 
 
 @Injectable()

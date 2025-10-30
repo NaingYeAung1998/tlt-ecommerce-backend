@@ -80,9 +80,12 @@ export class StockService {
       stock_supplier: stock.supplier.supplier_name + "(" + stock.supplier.supplier_phone + ")",
       stock_unit: stock.unit.unit_symbol,
       quantity: stock.quantity,
-      buying_price: nfObject.format(stock.buying_price) + " MMK",
-      selling_price: nfObject.format(stock.selling_price) + " MMK",
-      fix_price: nfObject.format(stock.fix_price) + " MMMK",
+      buying_price: stock.buying_price,
+      selling_price: stock.selling_price,
+      fix_price: stock.fix_price,
+      buying_price_formatted: nfObject.format(stock.buying_price) + " MMK",
+      selling_price_formatted: nfObject.format(stock.selling_price) + " MMK",
+      fix_price_formatted: nfObject.format(stock.fix_price) + " MMMK",
       note: stock.note,
       created_on: stock.created_on
     }
