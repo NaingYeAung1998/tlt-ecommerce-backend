@@ -31,6 +31,6 @@ export class SupplierController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.supplierService.remove(+id);
+    return this.supplierService.remove(id);
   }
 }

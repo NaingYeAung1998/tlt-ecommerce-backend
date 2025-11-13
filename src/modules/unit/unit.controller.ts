@@ -31,6 +31,6 @@ export class UnitController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.unitService.remove(+id);
+    return this.unitService.remove(id);
   }
 }

@@ -12,5 +12,5 @@ export declare class ProductService {
     findAll(search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | ProductLListDto[]>;
     findOne(id: string): Promise<Product>;
     update(id: string, updateProductDto: UpdateProductDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: number): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

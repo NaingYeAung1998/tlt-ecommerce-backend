@@ -31,6 +31,6 @@ export class GradeController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.gradeService.remove(+id);
+    return this.gradeService.remove(id);
   }
 }

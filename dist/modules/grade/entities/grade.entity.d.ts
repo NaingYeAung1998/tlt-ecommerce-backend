@@ -2,6 +2,7 @@ export declare class Grade {
     grade_id: string;
     grade_name: string;
     grade_description?: string;
+    isDelete?: boolean;
     created_on: Date;
     updated_on: Date;
     deleted_on: Date;

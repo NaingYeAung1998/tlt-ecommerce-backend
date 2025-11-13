@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ILike, Repository } from 'typeorm';
@@ -19,17 +19,14 @@ export class CategoryService {
 
   async findAll(search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
-      return await this.categoryRepository.find({ order: { category_name: 'ASC' } });
+      return await this.categoryRepository.find({ where: { isDelete: false }, order: { category_name: 'ASC' } });
     } else {
-      let [data, toatlLength] = await this.categoryRepository.findAndCount({
-        where: [
-          { category_name: ILike(`%${search}%`) },
-          { category_description: ILike(`%${search}%`) },
-        ],
-        order: { created_on: 'DESC' },
-        skip: currentPage * perPage,
-        take: perPage
-      });
+      let [data, toatlLength] = await this.categoryRepository.createQueryBuilder("category")
+        .where("category.isDelete = :isDelete AND ( category.category_name Like(:search) OR category.category_description Like(:search))", { isDelete: false, search: `%${search}%` })
+        .orderBy("category.created_on", "DESC")
+        .skip(currentPage * perPage)
+        .take(perPage)
+        .getManyAndCount();
       return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
     }
   }
@@ -42,7 +39,12 @@ export class CategoryService {
     return this.categoryRepository.update({ category_id: id }, updateCategoryDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+  async remove(id: string) {
+    let category = await this.findOne(id)
+    if (!category) {
+      throw new HttpException("Category not found", HttpStatus.NOT_FOUND);
+    }
+    category.isDelete = true;
+    return this.categoryRepository.update({ category_id: id }, category);
   }
 }

@@ -35,7 +35,7 @@ let GradeController = class GradeController {
         return this.gradeService.update(id, updateGradeDto);
     }
     remove(id) {
-        return this.gradeService.remove(+id);
+        return this.gradeService.remove(id);
     }
 };
 exports.GradeController = GradeController;

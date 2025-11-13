@@ -11,5 +11,5 @@ export declare class UnitService {
     findAll(search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | Unit[]>;
     findOne(id: string): Promise<Unit>;
     update(id: string, updateUnitDto: UpdateUnitDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: number): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

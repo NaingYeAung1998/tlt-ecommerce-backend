@@ -35,7 +35,7 @@ let CategoryController = class CategoryController {
         return this.categoryService.update(id, updateCategoryDto);
     }
     remove(id) {
-        return this.categoryService.remove(+id);
+        return this.categoryService.remove(id);
     }
 };
 exports.CategoryController = CategoryController;

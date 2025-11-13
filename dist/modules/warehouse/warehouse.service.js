@@ -28,20 +28,15 @@ let WarehouseService = class WarehouseService {
     }
     async findAll(search, currentPage, perPage) {
         if (perPage < 0) {
-            return await this.warehouseRepository.find({ order: { warehouse_name: 'ASC' } });
+            return await this.warehouseRepository.find({ where: { isDelete: false }, order: { warehouse_name: 'ASC' } });
         }
         else {
-            let [data, toatlLength] = await this.warehouseRepository.findAndCount({
-                where: [
-                    { warehouse_name: (0, typeorm_2.ILike)(`%${search}%`) },
-                    { warehouse_address: (0, typeorm_2.ILike)(`%${search}%`) },
-                    { warehouse_phone: (0, typeorm_2.ILike)(`%${search}%`) },
-                    { note: (0, typeorm_2.ILike)(`%${search}%`) }
-                ],
-                order: { created_on: 'DESC' },
-                skip: currentPage * perPage,
-                take: perPage
-            });
+            let [data, toatlLength] = await this.warehouseRepository.createQueryBuilder("warehouse")
+                .where("warehouse.isDelete = :isDelete AND ( warehouse.warehouse_name Like(:search) OR warehouse.warehouse_address Like(:search) OR warehouse.warehouse_phone Like(:search) OR warehouse.note Like(:search))", { isDelete: false, search: `%${search}%` })
+                .orderBy("warehouse.created_on", "DESC")
+                .skip(currentPage * perPage)
+                .take(perPage)
+                .getManyAndCount();
             return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
         }
     }
@@ -51,8 +46,13 @@ let WarehouseService = class WarehouseService {
     update(id, updateWarehouseDto) {
         return this.warehouseRepository.update({ warehouse_id: id }, updateWarehouseDto);
     }
-    remove(id) {
-        return `This action removes a #${id} warehouse`;
+    async remove(id) {
+        let warehouse = await this.findOne(id);
+        if (!warehouse) {
+            throw new common_1.HttpException("Warehouse Not Found", common_1.HttpStatus.NOT_FOUND);
+        }
+        warehouse.isDelete = true;
+        return this.warehouseRepository.update({ warehouse_id: id }, warehouse);
     }
 };
 exports.WarehouseService = WarehouseService;

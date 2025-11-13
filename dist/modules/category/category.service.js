@@ -28,18 +28,15 @@ let CategoryService = class CategoryService {
     }
     async findAll(search, currentPage, perPage) {
         if (perPage < 0) {
-            return await this.categoryRepository.find({ order: { category_name: 'ASC' } });
+            return await this.categoryRepository.find({ where: { isDelete: false }, order: { category_name: 'ASC' } });
         }
         else {
-            let [data, toatlLength] = await this.categoryRepository.findAndCount({
-                where: [
-                    { category_name: (0, typeorm_1.ILike)(`%${search}%`) },
-                    { category_description: (0, typeorm_1.ILike)(`%${search}%`) },
-                ],
-                order: { created_on: 'DESC' },
-                skip: currentPage * perPage,
-                take: perPage
-            });
+            let [data, toatlLength] = await this.categoryRepository.createQueryBuilder("category")
+                .where("category.isDelete = :isDelete AND ( category.category_name Like(:search) OR category.category_description Like(:search))", { isDelete: false, search: `%${search}%` })
+                .orderBy("category.created_on", "DESC")
+                .skip(currentPage * perPage)
+                .take(perPage)
+                .getManyAndCount();
             return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
         }
     }
@@ -49,8 +46,13 @@ let CategoryService = class CategoryService {
     update(id, updateCategoryDto) {
         return this.categoryRepository.update({ category_id: id }, updateCategoryDto);
     }
-    remove(id) {
-        return `This action removes a #${id} category`;
+    async remove(id) {
+        let category = await this.findOne(id);
+        if (!category) {
+            throw new common_1.HttpException("Category not found", common_1.HttpStatus.NOT_FOUND);
+        }
+        category.isDelete = true;
+        return this.categoryRepository.update({ category_id: id }, category);
     }
 };
 exports.CategoryService = CategoryService;

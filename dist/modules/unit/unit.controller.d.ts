@@ -12,5 +12,5 @@ export declare class UnitController {
     }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | import("./entities/unit.entity").Unit[]>;
     findOne(id: string): Promise<import("./entities/unit.entity").Unit>;
     update(id: string, updateUnitDto: UpdateUnitDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: string): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

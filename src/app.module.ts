@@ -22,6 +22,8 @@ import { StockTrackModule } from './modules/stock_track/stock_track.module';
 import { StockPayment } from './modules/stock_payment/entities/stock_payment.entity';
 import { StockTrack } from './modules/stock_track/entities/stock_track.entity';
 import { Warehouse } from './modules/warehouse/entities/warehouse.entity';
+import { CustomerModule } from './modules/customer/customer.module';
+import { Customer } from './modules/customer/entities/customer.entity';
 
 
 
@@ -39,11 +41,11 @@ import { Warehouse } from './modules/warehouse/entities/warehouse.entity';
       database: process.env.DATABASE,
       synchronize: process.env.DB_SYNC == 'true',
       autoLoadEntities: true,
-      entities: [Supplier, Category, Grade, Unit, Product, Stock, StockPayment, StockTrack, Warehouse],
+      entities: [Supplier, Category, Grade, Unit, Product, Stock, StockPayment, StockTrack, Warehouse, Customer],
       logger: 'file',
       logging: ["error"]
     }),
-    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule],
+    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule, CustomerModule],
   controllers: [AppController],
   providers: [AppService],
 })

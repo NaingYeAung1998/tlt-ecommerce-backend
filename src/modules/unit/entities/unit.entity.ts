@@ -11,6 +11,9 @@ export class Unit {
     @Column({ nullable: true })
     unit_symbol: string;
 
+    @Column({ default: false, type: 'boolean', nullable: true })
+    isDelete?: boolean
+
     @CreateDateColumn()
     created_on: Date;
 

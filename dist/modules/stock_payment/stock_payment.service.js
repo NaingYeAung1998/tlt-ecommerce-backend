@@ -52,7 +52,7 @@ let StockPaymentService = class StockPaymentService {
     async findByStock(stock_id, search, currentPage, perPage) {
         if (perPage < 0) {
             let data = await this.stockPaymentRepository.find({
-                where: [{ stock: { stock_id: stock_id } }, { note: (0, typeorm_2.ILike)(`%${search}%`) }],
+                where: [{ stock: { stock_id: stock_id }, note: (0, typeorm_2.ILike)(`%${search}%`) }],
                 order: { payment_date: 'DESC' }
             });
             let paymentList = this.convertPaymentsToList(data);
@@ -60,7 +60,7 @@ let StockPaymentService = class StockPaymentService {
         }
         else {
             let [data, toatlLength] = await this.stockPaymentRepository.findAndCount({
-                where: [{ stock: { stock_id: stock_id } }, { note: (0, typeorm_2.ILike)(`%${search}%`) }],
+                where: [{ stock: { stock_id: stock_id }, note: (0, typeorm_2.ILike)(`%${search}%`) }],
                 order: { created_on: 'DESC' },
                 skip: currentPage * perPage,
                 take: perPage,

@@ -31,6 +31,8 @@ const stock_track_module_1 = require("./modules/stock_track/stock_track.module")
 const stock_payment_entity_1 = require("./modules/stock_payment/entities/stock_payment.entity");
 const stock_track_entity_1 = require("./modules/stock_track/entities/stock_track.entity");
 const warehouse_entity_1 = require("./modules/warehouse/entities/warehouse.entity");
+const customer_module_1 = require("./modules/customer/customer.module");
+const customer_entity_1 = require("./modules/customer/entities/customer.entity");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -49,11 +51,11 @@ exports.AppModule = AppModule = __decorate([
                 database: process.env.DATABASE,
                 synchronize: process.env.DB_SYNC == 'true',
                 autoLoadEntities: true,
-                entities: [supplier_entity_1.Supplier, category_entity_1.Category, grade_entity_1.Grade, unit_entity_1.Unit, product_entity_1.Product, stock_entity_1.Stock, stock_payment_entity_1.StockPayment, stock_track_entity_1.StockTrack, warehouse_entity_1.Warehouse],
+                entities: [supplier_entity_1.Supplier, category_entity_1.Category, grade_entity_1.Grade, unit_entity_1.Unit, product_entity_1.Product, stock_entity_1.Stock, stock_payment_entity_1.StockPayment, stock_track_entity_1.StockTrack, warehouse_entity_1.Warehouse, customer_entity_1.Customer],
                 logger: 'file',
                 logging: ["error"]
             }),
-            supplier_module_1.SupplierModule, utility_module_1.UtilityModule, category_module_1.CategoryModule, grade_module_1.GradeModule, unit_module_1.UnitModule, product_module_1.ProductModule, stock_module_1.StockModule, warehouse_module_1.WarehouseModule, stock_payment_module_1.StockPaymentModule, stock_track_module_1.StockTrackModule
+            supplier_module_1.SupplierModule, utility_module_1.UtilityModule, category_module_1.CategoryModule, grade_module_1.GradeModule, unit_module_1.UnitModule, product_module_1.ProductModule, stock_module_1.StockModule, warehouse_module_1.WarehouseModule, stock_payment_module_1.StockPaymentModule, stock_track_module_1.StockTrackModule, customer_module_1.CustomerModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

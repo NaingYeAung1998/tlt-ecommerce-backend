@@ -34,7 +34,7 @@ let WarehouseController = class WarehouseController {
         return this.warehouseService.update(id, updateWarehouseDto);
     }
     remove(id) {
-        return this.warehouseService.remove(+id);
+        return this.warehouseService.remove(id);
     }
 };
 exports.WarehouseController = WarehouseController;

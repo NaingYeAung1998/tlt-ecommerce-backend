@@ -35,7 +35,7 @@ let UnitController = class UnitController {
         return this.unitService.update(id, updateUnitDto);
     }
     remove(id) {
-        return this.unitService.remove(+id);
+        return this.unitService.remove(id);
     }
 };
 exports.UnitController = UnitController;

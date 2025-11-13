@@ -28,18 +28,15 @@ let UnitService = class UnitService {
     }
     async findAll(search, currentPage, perPage) {
         if (perPage < 0) {
-            return await this.unitRepository.find({ order: { unit_symbol: 'ASC' } });
+            return await this.unitRepository.find({ where: { isDelete: false }, order: { unit_symbol: 'ASC' } });
         }
         else {
-            let [data, toatlLength] = await this.unitRepository.findAndCount({
-                where: [
-                    { unit_name: (0, typeorm_1.ILike)(`%${search}%`) },
-                    { unit_symbol: (0, typeorm_1.ILike)(`%${search}%`) },
-                ],
-                order: { created_on: 'DESC' },
-                skip: currentPage * perPage,
-                take: perPage
-            });
+            let [data, toatlLength] = await this.unitRepository.createQueryBuilder("unit")
+                .where("unit.isDelete = :isDelete AND ( unit.unit_name Like(:search) OR unit.unit_symbol Like(:search))", { isDelete: false, search: `%${search}%` })
+                .orderBy("unit.created_on", "DESC")
+                .skip(currentPage * perPage)
+                .take(perPage)
+                .getManyAndCount();
             return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
         }
     }
@@ -49,8 +46,13 @@ let UnitService = class UnitService {
     update(id, updateUnitDto) {
         return this.unitRepository.update({ unit_id: id }, updateUnitDto);
     }
-    remove(id) {
-        return `This action removes a #${id} unit`;
+    async remove(id) {
+        let unit = await this.findOne(id);
+        if (!unit) {
+            throw new common_1.HttpException("Unit not found", common_1.HttpStatus.NOT_FOUND);
+        }
+        unit.isDelete = true;
+        return this.unitRepository.update({ unit_id: id }, unit);
     }
 };
 exports.UnitService = UnitService;

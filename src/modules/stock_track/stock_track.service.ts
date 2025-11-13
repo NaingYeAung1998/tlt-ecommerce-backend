@@ -53,7 +53,7 @@ export class StockTrackService {
   async findByStock(stock_id: string, search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
       let data = await this.stockTrackRepository.find({
-        where: [{ stock: { stock_id: stock_id } }, { note: ILike(`%${search}%`) }],
+        where: [{ stock: { stock_id: stock_id }, note: ILike(`%${search}%`) }],
         order: { checked_date: 'DESC' },
         relations: ['stock', 'warehouse']
       }
@@ -62,7 +62,7 @@ export class StockTrackService {
     } else {
       let [data, toatlLength] = await this.stockTrackRepository.findAndCount({
         where: [
-          { stock: { stock_id: stock_id } }, { note: ILike(`%${search}%`) }
+          { stock: { stock_id: stock_id }, note: ILike(`%${search}%`) }
         ],
         order: { created_on: 'DESC' },
         skip: currentPage * perPage,

@@ -12,5 +12,5 @@ export declare class SupplierController {
     }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | import("./entities/supplier.entity").Supplier[]>;
     findOne(id: string): Promise<import("./entities/supplier.entity").Supplier>;
     update(id: string, updateSupplierDto: UpdateSupplierDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: string): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

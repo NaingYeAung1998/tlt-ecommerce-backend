@@ -28,18 +28,15 @@ let GradeService = class GradeService {
     }
     async findAll(search, currentPage, perPage) {
         if (perPage < 0) {
-            return await this.gradeRepository.find({ order: { grade_name: 'ASC' } });
+            return await this.gradeRepository.find({ where: { isDelete: false }, order: { grade_name: 'ASC' } });
         }
         else {
-            let [data, toatlLength] = await this.gradeRepository.findAndCount({
-                where: [
-                    { grade_name: (0, typeorm_1.ILike)(`%${search}%`) },
-                    { grade_description: (0, typeorm_1.ILike)(`%${search}%`) },
-                ],
-                order: { created_on: 'DESC' },
-                skip: currentPage * perPage,
-                take: perPage
-            });
+            let [data, toatlLength] = await this.gradeRepository.createQueryBuilder("grade")
+                .where("grade.isDelete = :isDelete AND ( grade.grade_name Like(:search) OR grade.grade_description Like(:search))", { isDelete: false, search: `%${search}%` })
+                .orderBy("grade.created_on", "DESC")
+                .skip(currentPage * perPage)
+                .take(perPage)
+                .getManyAndCount();
             return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
         }
     }
@@ -49,8 +46,13 @@ let GradeService = class GradeService {
     update(id, updateGradeDto) {
         return this.gradeRepository.update({ grade_id: id }, updateGradeDto);
     }
-    remove(id) {
-        return `This action removes a #${id} grade`;
+    async remove(id) {
+        let grade = await this.findOne(id);
+        if (!grade) {
+            throw new common_1.HttpException("Grade not found", common_1.HttpStatus.NOT_FOUND);
+        }
+        grade.isDelete = true;
+        return this.gradeRepository.update({ grade_id: id }, grade);
     }
 };
 exports.GradeService = GradeService;

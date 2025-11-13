@@ -12,5 +12,5 @@ export declare class GradeController {
     }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | import("./entities/grade.entity").Grade[]>;
     findOne(id: string): Promise<import("./entities/grade.entity").Grade>;
     update(id: string, updateGradeDto: UpdateGradeDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: string): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

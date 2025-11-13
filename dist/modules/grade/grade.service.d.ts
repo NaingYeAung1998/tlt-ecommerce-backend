@@ -11,5 +11,5 @@ export declare class GradeService {
     findAll(search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | Grade[]>;
     findOne(id: string): Promise<Grade>;
     update(id: string, updateGradeDto: UpdateGradeDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: number): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

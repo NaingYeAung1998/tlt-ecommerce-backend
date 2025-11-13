@@ -12,5 +12,5 @@ export declare class WarehouseController {
     }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | import("./entities/warehouse.entity").Warehouse[]>;
     findOne(id: string): Promise<import("./entities/warehouse.entity").Warehouse>;
     update(id: string, updateWarehouseDto: UpdateWarehouseDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: string): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

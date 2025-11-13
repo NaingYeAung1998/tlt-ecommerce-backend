@@ -29,6 +29,6 @@ export class WarehouseController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.warehouseService.remove(+id);
+    return this.warehouseService.remove(id);
   }
 }

@@ -6,6 +6,7 @@ import { Product } from './entities/product.entity';
 import { ILike, Repository } from 'typeorm';
 import { UtilityService } from 'src/core/utility/utility.service';
 import { ProductLListDto } from './dto/product-list.dto';
+import { Category } from '../category/entities/category.entity';
 
 @Injectable()
 export class ProductService {
@@ -31,21 +32,19 @@ export class ProductService {
     let products = [];
     let totalLength = 0
     if (perPage < 0) {
-      let data = await this.productRepository.find({ order: { product_name: 'ASC' }, relations: ['category', 'grade'] });
+      let data = await this.productRepository.find({ where: { isDelete: false }, order: { product_name: 'ASC' }, relations: ['category', 'grade'] });
       products = data;
       totalLength = data.length;
     } else {
-      let [data, length] = await this.productRepository.findAndCount({
-        where: [
-          { product_code: ILike(`%${search}%`) },
-          { product_name: ILike(`%${search}%`) },
-          { product_description: ILike(`%${search}%`) }
-        ],
-        order: { created_on: 'DESC' },
-        skip: currentPage * perPage,
-        take: perPage,
-        relations: ['category', 'grade']
-      });
+      let [data, length] = await this.productRepository.createQueryBuilder("product")
+        .where("product.isDelete = :isDelete AND ( product.product_code Like(:search) OR product.product_name Like(:search) OR product.product_description Like(:search))", { isDelete: false, search: `%${search}%` })
+        .orderBy("product.created_on", "DESC")
+        .skip(currentPage * perPage)
+        .take(perPage)
+        .leftJoinAndSelect("product.category", "category")
+        .leftJoinAndSelect("product.grade", "grade")
+        .getManyAndCount();
+
       products = data
       totalLength = length
     }
@@ -78,7 +77,12 @@ export class ProductService {
     return this.productRepository.update({ product_id: id }, updateProductDto)
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    let product = await this.findOne(id);
+    if (!product) {
+      throw new HttpException("Product not found", HttpStatus.NOT_FOUND)
+    }
+    product.isDelete = true;
+    return this.productRepository.update({ product_id: id }, product);
   }
 }

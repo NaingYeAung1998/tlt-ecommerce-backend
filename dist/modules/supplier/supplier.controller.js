@@ -35,7 +35,7 @@ let SupplierController = class SupplierController {
         return this.supplierService.update(id, updateSupplierDto);
     }
     remove(id) {
-        return this.supplierService.remove(+id);
+        return this.supplierService.remove(id);
     }
 };
 exports.SupplierController = SupplierController;

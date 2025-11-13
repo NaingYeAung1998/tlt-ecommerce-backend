@@ -45,7 +45,7 @@ export class StockPaymentService {
   async findByStock(stock_id: string, search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
       let data = await this.stockPaymentRepository.find({
-        where: [{ stock: { stock_id: stock_id } }, { note: ILike(`%${search}%`) }],
+        where: [{ stock: { stock_id: stock_id }, note: ILike(`%${search}%`) }],
         order: { payment_date: 'DESC' }
       }
       );
@@ -53,7 +53,7 @@ export class StockPaymentService {
       return paymentList;
     } else {
       let [data, toatlLength] = await this.stockPaymentRepository.findAndCount({
-        where: [{ stock: { stock_id: stock_id } }, { note: ILike(`%${search}%`) }],
+        where: [{ stock: { stock_id: stock_id }, note: ILike(`%${search}%`) }],
         order: { created_on: 'DESC' },
         skip: currentPage * perPage,
         take: perPage,

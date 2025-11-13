@@ -19,6 +19,9 @@ export class Product {
     @Column({ nullable: true })
     note?: string;
 
+    @Column({ default: false, type: 'boolean', nullable: true })
+    isDelete?: boolean;
+
     @CreateDateColumn()
     created_on: Date;
 

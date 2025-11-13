@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateGradeDto } from './dto/create-grade.dto';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 import { ILike, Repository } from 'typeorm';
@@ -19,17 +19,14 @@ export class GradeService {
 
   async findAll(search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
-      return await this.gradeRepository.find({ order: { grade_name: 'ASC' } });
+      return await this.gradeRepository.find({ where: { isDelete: false }, order: { grade_name: 'ASC' } });
     } else {
-      let [data, toatlLength] = await this.gradeRepository.findAndCount({
-        where: [
-          { grade_name: ILike(`%${search}%`) },
-          { grade_description: ILike(`%${search}%`) },
-        ],
-        order: { created_on: 'DESC' },
-        skip: currentPage * perPage,
-        take: perPage
-      });
+      let [data, toatlLength] = await this.gradeRepository.createQueryBuilder("grade")
+        .where("grade.isDelete = :isDelete AND ( grade.grade_name Like(:search) OR grade.grade_description Like(:search))", { isDelete: false, search: `%${search}%` })
+        .orderBy("grade.created_on", "DESC")
+        .skip(currentPage * perPage)
+        .take(perPage)
+        .getManyAndCount();
       return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
     }
 
@@ -43,7 +40,12 @@ export class GradeService {
     return this.gradeRepository.update({ grade_id: id }, updateGradeDto)
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} grade`;
+  async remove(id: string) {
+    let grade = await this.findOne(id);
+    if (!grade) {
+      throw new HttpException("Grade not found", HttpStatus.NOT_FOUND);
+    }
+    grade.isDelete = true;
+    return this.gradeRepository.update({ grade_id: id }, grade);
   }
 }

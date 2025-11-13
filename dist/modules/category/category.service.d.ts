@@ -11,5 +11,5 @@ export declare class CategoryService {
     findAll(search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | Category[]>;
     findOne(id: string): Promise<Category>;
     update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: number): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

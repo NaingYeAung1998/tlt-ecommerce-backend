@@ -28,20 +28,15 @@ let SupplierService = class SupplierService {
     }
     async findAll(search, currentPage, perPage) {
         if (perPage < 0) {
-            return await this.supplierRepository.find({ order: { supplier_name: 'ASC' } });
+            return await this.supplierRepository.find({ where: { isDelete: false }, order: { supplier_name: 'ASC' } });
         }
         else {
-            let [data, toatlLength] = await this.supplierRepository.findAndCount({
-                where: [
-                    { supplier_name: (0, typeorm_2.ILike)(`%${search}%`) },
-                    { supplier_address: (0, typeorm_2.ILike)(`%${search}%`) },
-                    { supplier_phone: (0, typeorm_2.ILike)(`%${search}%`) },
-                    { note: (0, typeorm_2.ILike)(`%${search}%`) }
-                ],
-                order: { created_on: 'DESC' },
-                skip: currentPage * perPage,
-                take: perPage
-            });
+            let [data, toatlLength] = await this.supplierRepository.createQueryBuilder("supplier")
+                .where("supplier.isDelete = :isDelete AND ( supplier.supplier_name Like(:search) OR supplier.supplier_address Like(:search) OR supplier.supplier_phone Like(:search) OR supplier.note Like(:search))", { isDelete: false, search: `%${search}%` })
+                .orderBy("supplier.created_on", "DESC")
+                .skip(currentPage * perPage)
+                .take(perPage)
+                .getManyAndCount();
             return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
         }
     }
@@ -51,8 +46,13 @@ let SupplierService = class SupplierService {
     update(id, updateSupplierDto) {
         return this.supplierRepository.update({ supplier_id: id }, updateSupplierDto);
     }
-    remove(id) {
-        return `This action removes a #${id} supplier`;
+    async remove(id) {
+        let supplier = await this.findOne(id);
+        if (!supplier) {
+            throw new common_1.HttpException("Supplier not found", common_1.HttpStatus.NOT_FOUND);
+        }
+        supplier.isDelete = true;
+        return this.supplierRepository.update({ supplier_id: id }, supplier);
     }
 };
 exports.SupplierService = SupplierService;

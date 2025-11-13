@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUnitDto } from './dto/create-unit.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
 import { ILike, Repository } from 'typeorm';
@@ -19,17 +19,15 @@ export class UnitService {
 
   async findAll(search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
-      return await this.unitRepository.find({ order: { unit_symbol: 'ASC' } });
+      return await this.unitRepository.find({ where: { isDelete: false }, order: { unit_symbol: 'ASC' } });
     } else {
-      let [data, toatlLength] = await this.unitRepository.findAndCount({
-        where: [
-          { unit_name: ILike(`%${search}%`) },
-          { unit_symbol: ILike(`%${search}%`) },
-        ],
-        order: { created_on: 'DESC' },
-        skip: currentPage * perPage,
-        take: perPage
-      });
+      let [data, toatlLength] = await this.unitRepository.createQueryBuilder("unit")
+        .where("unit.isDelete = :isDelete AND ( unit.unit_name Like(:search) OR unit.unit_symbol Like(:search))", { isDelete: false, search: `%${search}%` })
+        .orderBy("unit.created_on", "DESC")
+        .skip(currentPage * perPage)
+        .take(perPage)
+        .getManyAndCount();
+
       return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
     }
 
@@ -43,7 +41,12 @@ export class UnitService {
     return this.unitRepository.update({ unit_id: id }, updateUnitDto)
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} unit`;
+  async remove(id: string) {
+    let unit = await this.findOne(id);
+    if (!unit) {
+      throw new HttpException("Unit not found", HttpStatus.NOT_FOUND);
+    }
+    unit.isDelete = true;
+    return this.unitRepository.update({ unit_id: id }, unit);
   }
 }

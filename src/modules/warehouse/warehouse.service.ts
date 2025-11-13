@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { And, ILike, Repository } from 'typeorm';
 import { Warehouse } from './entities/warehouse.entity';
 import { UtilityService } from 'src/core/utility/utility.service';
 
@@ -19,19 +19,14 @@ export class WarehouseService {
 
   async findAll(search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
-      return await this.warehouseRepository.find({ order: { warehouse_name: 'ASC' } });
+      return await this.warehouseRepository.find({ where: { isDelete: false }, order: { warehouse_name: 'ASC' } });
     } else {
-      let [data, toatlLength] = await this.warehouseRepository.findAndCount({
-        where: [
-          { warehouse_name: ILike(`%${search}%`) },
-          { warehouse_address: ILike(`%${search}%`) },
-          { warehouse_phone: ILike(`%${search}%`) },
-          { note: ILike(`%${search}%`) }
-        ],
-        order: { created_on: 'DESC' },
-        skip: currentPage * perPage,
-        take: perPage
-      });
+      let [data, toatlLength] = await this.warehouseRepository.createQueryBuilder("warehouse")
+        .where("warehouse.isDelete = :isDelete AND ( warehouse.warehouse_name Like(:search) OR warehouse.warehouse_address Like(:search) OR warehouse.warehouse_phone Like(:search) OR warehouse.note Like(:search))", { isDelete: false, search: `%${search}%` })
+        .orderBy("warehouse.created_on", "DESC")
+        .skip(currentPage * perPage)
+        .take(perPage)
+        .getManyAndCount();
       return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength)
     }
 
@@ -45,7 +40,12 @@ export class WarehouseService {
     return this.warehouseRepository.update({ warehouse_id: id }, updateWarehouseDto)
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} warehouse`;
+  async remove(id: string) {
+    let warehouse = await this.findOne(id);
+    if (!warehouse) {
+      throw new HttpException("Warehouse Not Found", HttpStatus.NOT_FOUND);
+    }
+    warehouse.isDelete = true;
+    return this.warehouseRepository.update({ warehouse_id: id }, warehouse)
   }
 }

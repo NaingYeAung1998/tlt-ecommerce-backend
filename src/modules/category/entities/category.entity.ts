@@ -11,6 +11,9 @@ export class Category {
     @Column({ nullable: true })
     category_description?: string;
 
+    @Column({ default: false, type: 'boolean', nullable: true })
+    isDelete?: boolean;
+
     @CreateDateColumn()
     created_on: Date;
 

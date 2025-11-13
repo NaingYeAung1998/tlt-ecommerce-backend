@@ -11,5 +11,5 @@ export declare class SupplierService {
     findAll(search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | Supplier[]>;
     findOne(id: string): Promise<Supplier>;
     update(id: string, updateSupplierDto: UpdateSupplierDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: number): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

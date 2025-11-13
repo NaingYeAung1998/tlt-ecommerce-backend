@@ -11,5 +11,5 @@ export declare class WarehouseService {
     findAll(search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | Warehouse[]>;
     findOne(id: string): Promise<Warehouse>;
     update(id: string, updateWarehouseDto: UpdateWarehouseDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: number): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

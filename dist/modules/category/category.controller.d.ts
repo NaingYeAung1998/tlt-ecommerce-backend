@@ -12,5 +12,5 @@ export declare class CategoryController {
     }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | import("./entities/category.entity").Category[]>;
     findOne(id: string): Promise<import("./entities/category.entity").Category>;
     update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<import("typeorm").UpdateResult>;
-    remove(id: string): string;
+    remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

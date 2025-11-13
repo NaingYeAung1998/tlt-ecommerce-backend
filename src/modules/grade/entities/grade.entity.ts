@@ -11,6 +11,9 @@ export class Grade {
     @Column({ nullable: true })
     grade_description?: string;
 
+    @Column({ default: false, type: 'boolean', nullable: true })
+    isDelete?: boolean;
+
     @CreateDateColumn()
     created_on: Date;
 

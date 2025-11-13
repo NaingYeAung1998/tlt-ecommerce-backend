@@ -6,6 +6,7 @@ export declare class Product {
     product_code?: string;
     product_description?: string;
     note?: string;
+    isDelete?: boolean;
     created_on: Date;
     updated_on: Date;
     deleted_on: Date;
