@@ -9,7 +9,7 @@ export declare class CustomerController {
         search: string;
         currentPage: number;
         perPage: number;
-    }): Promise<import("./entities/customer.entity").Customer[] | import("../../core/utility/dto/pagination-list.dto").PaginationList>;
+    }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | import("./entities/customer.entity").Customer[]>;
     findOne(id: string): Promise<import("./entities/customer.entity").Customer>;
     update(id: string, updateCustomerDto: UpdateCustomerDto): Promise<import("typeorm").UpdateResult>;
     remove(id: string): Promise<import("typeorm").UpdateResult>;

@@ -24,6 +24,13 @@ import { StockTrack } from './modules/stock_track/entities/stock_track.entity';
 import { Warehouse } from './modules/warehouse/entities/warehouse.entity';
 import { CustomerModule } from './modules/customer/customer.module';
 import { Customer } from './modules/customer/entities/customer.entity';
+import { OrderModule } from './modules/order/order.module';
+import { SupplierVoucherModule } from './supplier_voucher/supplier_voucher.module';
+import { SupplierVoucherStocksModule } from './modules/supplier_voucher_stocks/supplier_voucher_stocks.module';
+import { SupplierVoucherPaymentsModule } from './modules/supplier_voucher_payments/supplier_voucher_payments.module';
+import { SupplierVoucher } from './supplier_voucher/entities/supplier_voucher.entity';
+import { SupplierVoucherStock } from './modules/supplier_voucher_stocks/entities/supplier_voucher_stock.entity';
+import { SupplierVoucherPayment } from './modules/supplier_voucher_payments/entities/supplier_voucher_payment.entity';
 
 
 
@@ -41,11 +48,11 @@ import { Customer } from './modules/customer/entities/customer.entity';
       database: process.env.DATABASE,
       synchronize: process.env.DB_SYNC == 'true',
       autoLoadEntities: true,
-      entities: [Supplier, Category, Grade, Unit, Product, Stock, StockPayment, StockTrack, Warehouse, Customer],
+      entities: [Supplier, Category, Grade, Unit, Product, Stock, StockPayment, StockTrack, Warehouse, Customer, SupplierVoucher, SupplierVoucherStock, SupplierVoucherPayment],
       logger: 'file',
       logging: ["error"]
     }),
-    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule, CustomerModule],
+    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule, CustomerModule, OrderModule, SupplierVoucherModule, SupplierVoucherStocksModule, SupplierVoucherPaymentsModule],
   controllers: [AppController],
   providers: [AppService],
 })

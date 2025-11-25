@@ -14,8 +14,16 @@ export class StockService {
     private stockRepository: Repository<Stock>,
     private utilityService: UtilityService
   ) { }
-  create(createStockDto: CreateStockDto) {
-    return this.stockRepository.save(createStockDto);
+  async create(createStockDto: CreateStockDto) {
+    try {
+      let existingProduct = await this.stockRepository.findOne({ where: { stock_code: createStockDto.stock_code } });
+      if (existingProduct) {
+        throw new HttpException('Duplicate Stock Code', HttpStatus.BAD_REQUEST)
+      }
+      return this.stockRepository.save(createStockDto);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async findAll(search: string, currentPage: number, perPage: number) {

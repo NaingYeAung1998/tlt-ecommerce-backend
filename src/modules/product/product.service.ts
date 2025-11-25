@@ -55,8 +55,8 @@ export class ProductService {
         product_name: product.product_name,
         product_code: product.product_code,
         product_description: product.product_description,
-        product_category: product.category.category_name,
-        product_grade: product.grade.grade_name,
+        product_category: product.category?.category_name,
+        product_grade: product.grade?.grade_name,
         note: product.note,
         created_on: product.created_on
       }

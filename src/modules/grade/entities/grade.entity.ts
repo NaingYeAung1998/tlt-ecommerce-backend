@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from "typeorm";
+import { Product } from "src/modules/product/entities/product.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Grade {
@@ -22,4 +23,8 @@ export class Grade {
 
     @DeleteDateColumn()
     deleted_on: Date;
+
+    //Foreign Key
+    @OneToMany(() => Product, product => product.grade)
+    products: Product[];
 }

@@ -1,3 +1,4 @@
+import { Product } from "src/modules/product/entities/product.entity";
 export declare class Grade {
     grade_id: string;
     grade_name: string;
@@ -6,4 +7,5 @@ export declare class Grade {
     created_on: Date;
     updated_on: Date;
     deleted_on: Date;
+    products: Product[];
 }

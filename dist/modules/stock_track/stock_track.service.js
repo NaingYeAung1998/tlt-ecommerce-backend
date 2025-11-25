@@ -79,18 +79,16 @@ let StockTrackService = class StockTrackService {
         }
     }
     async getStockTrackInfo(stock_id) {
-        let stockInfo = await this.stockService.findOne(stock_id);
-        let stockTracks = await this.stockTrackRepository.find({ where: { stock: { stock_id: stock_id } }, relations: ['stock'] });
-        stockInfo.total_delivered = 0;
-        stockInfo.total_stored = 0;
-        stockTracks.forEach((track) => {
-            if (track.status == stock_track_entity_1.StockTrackStatus.DELIVERD) {
-                stockInfo.total_delivered += parseInt(track.quantity.toString());
-            }
-            else if (track.status == stock_track_entity_1.StockTrackStatus.STORED) {
-                stockInfo.total_stored += parseInt(track.quantity.toString());
-            }
-        });
+        let stockInfo = await this.stockTrackRepository.createQueryBuilder("stock_track")
+            .leftJoin("stock_track.stock", "stock")
+            .leftJoin("stock.product", "product")
+            .groupBy("stock.stock_id")
+            .where("stock.stock_id = :stock_id", { stock_id })
+            .select("stock.*")
+            .addSelect("CONCAT(product.product_name, ' (', product.product_code, ')' )", "stock_product")
+            .addSelect("SUM(CASE WHEN stock_track.status =" + stock_track_entity_1.StockTrackStatus.DELIVERD + " THEN stock_track.quantity ELSE 0 END)", "total_delivered")
+            .addSelect("SUM(CASE WHEN stock_track.status =" + stock_track_entity_1.StockTrackStatus.STORED + " THEN stock_track.quantity ELSE 0 END)", "total_stored")
+            .getRawOne();
         return stockInfo;
     }
     findOne(id) {

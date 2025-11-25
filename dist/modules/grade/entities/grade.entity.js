@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Grade = void 0;
+const product_entity_1 = require("../../product/entities/product.entity");
 const typeorm_1 = require("typeorm");
 let Grade = class Grade {
 };
@@ -42,6 +43,10 @@ __decorate([
     (0, typeorm_1.DeleteDateColumn)(),
     __metadata("design:type", Date)
 ], Grade.prototype, "deleted_on", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => product_entity_1.Product, product => product.grade),
+    __metadata("design:type", Array)
+], Grade.prototype, "products", void 0);
 exports.Grade = Grade = __decorate([
     (0, typeorm_1.Entity)()
 ], Grade);

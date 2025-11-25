@@ -11,5 +11,5 @@ export declare class Product {
     updated_on: Date;
     deleted_on: Date;
     category: Category;
-    grade: Grade;
+    grade?: Grade;
 }

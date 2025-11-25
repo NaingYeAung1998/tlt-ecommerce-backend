@@ -8,7 +8,7 @@ export declare class GradeService {
     private utilityService;
     constructor(gradeRepository: Repository<Grade>, utilityService: UtilityService);
     create(createGradeDto: CreateGradeDto): void;
-    findAll(search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | Grade[]>;
+    findAll(search: string, currentPage: number, perPage: number): Promise<Grade[] | import("../../core/utility/dto/pagination-list.dto").PaginationList>;
     findOne(id: string): Promise<Grade>;
     update(id: string, updateGradeDto: UpdateGradeDto): Promise<import("typeorm").UpdateResult>;
     remove(id: string): Promise<import("typeorm").UpdateResult>;

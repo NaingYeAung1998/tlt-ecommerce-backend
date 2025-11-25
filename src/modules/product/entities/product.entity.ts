@@ -32,11 +32,11 @@ export class Product {
     deleted_on: Date;
 
     //Foreign keys
-    @ManyToOne(() => Category)
+    @ManyToOne(() => Category, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'category_id' })
     category: Category;
 
-    @ManyToOne(() => Grade)
+    @ManyToOne(() => Grade, grade => grade.products, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'grade_id' })
-    grade: Grade;
+    grade?: Grade;
 }

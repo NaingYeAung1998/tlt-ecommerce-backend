@@ -9,7 +9,7 @@ export declare class ProductService {
     private utilityService;
     constructor(productRepository: Repository<Product>, utilityService: UtilityService);
     create(createProductDto: CreateProductDto): Promise<CreateProductDto & Product>;
-    findAll(search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | ProductLListDto[]>;
+    findAll(search: string, currentPage: number, perPage: number): Promise<ProductLListDto[] | import("../../core/utility/dto/pagination-list.dto").PaginationList>;
     findOne(id: string): Promise<Product>;
     update(id: string, updateProductDto: UpdateProductDto): Promise<import("typeorm").UpdateResult>;
     remove(id: string): Promise<import("typeorm").UpdateResult>;

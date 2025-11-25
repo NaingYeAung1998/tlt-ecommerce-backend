@@ -53,12 +53,12 @@ __decorate([
     __metadata("design:type", Date)
 ], Product.prototype, "deleted_on", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => category_entity_1.Category),
+    (0, typeorm_1.ManyToOne)(() => category_entity_1.Category, { nullable: true, onDelete: 'SET NULL' }),
     (0, typeorm_1.JoinColumn)({ name: 'category_id' }),
     __metadata("design:type", category_entity_1.Category)
 ], Product.prototype, "category", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => grade_entity_1.Grade),
+    (0, typeorm_1.ManyToOne)(() => grade_entity_1.Grade, grade => grade.products, { nullable: true, onDelete: 'SET NULL' }),
     (0, typeorm_1.JoinColumn)({ name: 'grade_id' }),
     __metadata("design:type", grade_entity_1.Grade)
 ], Product.prototype, "grade", void 0);
