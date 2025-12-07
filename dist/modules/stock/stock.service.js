@@ -18,6 +18,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const stock_entity_1 = require("./entities/stock.entity");
 const utility_service_1 = require("../../core/utility/utility.service");
+const constants_1 = require("../../core/constants");
 let StockService = class StockService {
     constructor(stockRepository, utilityService) {
         this.stockRepository = stockRepository;
@@ -25,10 +26,8 @@ let StockService = class StockService {
     }
     async create(createStockDto) {
         try {
-            let existingProduct = await this.stockRepository.findOne({ where: { stock_code: createStockDto.stock_code } });
-            if (existingProduct) {
-                throw new common_1.HttpException('Duplicate Stock Code', common_1.HttpStatus.BAD_REQUEST);
-            }
+            let stockCount = await this.stockRepository.count();
+            createStockDto.stock_code = this.utilityService.formatAutoIncrementCode(constants_1.PRODUCT_STOCK_INITIALS, stockCount);
             return this.stockRepository.save(createStockDto);
         }
         catch (err) {
@@ -49,7 +48,7 @@ let StockService = class StockService {
         return this.utilityService.createPaginationList(stockList, currentPage, perPage, toatlLength);
     }
     async findByProduct(product_id, search, currentPage, perPage) {
-        let [data, toatlLength] = await this.stockRepository.findAndCount({
+        let [data, totalLength] = await this.stockRepository.findAndCount({
             where: [
                 { product: { product_id: product_id }, stock_code: (0, typeorm_2.ILike)(`%${search}%`) }
             ],
@@ -59,16 +58,30 @@ let StockService = class StockService {
             relations: ['product', 'supplier', 'unit']
         });
         let stockList = this.convertStocksToList(data);
-        return this.utilityService.createPaginationList(stockList, currentPage, perPage, toatlLength);
+        return this.utilityService.createPaginationList(stockList, currentPage, perPage, totalLength);
+    }
+    async findBySuppleir(supplier_id, search) {
+        let [data, totalLength] = await this.stockRepository.createQueryBuilder("stock")
+            .leftJoinAndSelect("stock.product", "product")
+            .leftJoinAndSelect("stock.unit", "unit")
+            .where("stock.is_delete = :is_delete AND stock.supplier_id = :supplier_id ", { is_delete: false, supplier_id })
+            .andWhere((query) => {
+            const subQuery = query.subQuery().select("supplier_voucher_stock.stock_id").from("supplier_voucher_stock", "supplier_voucher_stock").getQuery();
+            return `stock.stock_id NOT IN ${subQuery}`;
+        })
+            .getManyAndCount();
+        let stockList = this.convertStocksToList(data);
+        return stockList;
     }
     async findOne(id) {
-        let stock = await this.stockRepository.findOne({ where: { stock_id: id }, relations: ['product', 'supplier', 'unit'] });
+        let stock = await this.stockRepository.findOne({ where: { stock_id: id }, relations: ['product', 'supplier', 'unit', 'wholesale_starting_unit', 'warehouse'] });
         if (!stock) {
             throw new common_1.HttpException('Stock not found', common_1.HttpStatus.NOT_FOUND);
         }
         return this.convertStockToViewDto(stock);
     }
     update(id, updateStockDto) {
+        console.log(updateStockDto);
         return this.stockRepository.update({ stock_id: id }, updateStockDto);
     }
     remove(id) {
@@ -87,13 +100,23 @@ let StockService = class StockService {
         let stockObj = {
             stock_id: stock.stock_id,
             stock_code: stock.stock_code,
-            stock_product: stock.product.product_name + "(" + stock.product.product_code + ")",
-            stock_supplier: stock.supplier.supplier_name + "(" + stock.supplier.supplier_phone + ")",
-            stock_unit: stock.unit.unit_symbol,
+            stock_product: stock.product?.product_name + "(" + stock.product?.product_code + ")",
+            stock_product_id: stock.product?.product_id,
+            stock_supplier: stock.supplier?.supplier_name + "(" + stock.supplier?.supplier_phone + ")",
+            stock_supplier_id: stock.supplier?.supplier_id,
+            stock_warehouse: stock.warehouse?.warehouse_name,
+            stock_warehouse_id: stock.warehouse?.warehouse_id,
+            stock_unit: stock.unit.unit_name,
+            stock_unit_id: stock.unit?.unit_id,
             quantity: stock.quantity,
             buying_price: stock.buying_price,
             selling_price: stock.selling_price,
             fix_price: stock.fix_price,
+            wholesale_selling_price: stock.wholesale_selling_price,
+            wholesale_fix_price: stock.wholesale_fix_price,
+            wholesale_starting_quantity: stock.wholesale_starting_quantity,
+            wholesale_starting_unit: stock.wholesale_starting_unit?.unit_name,
+            wholesale_strating_unit_id: stock.wholesale_starting_unit?.unit_id,
             buying_price_formatted: nfObject.format(stock.buying_price) + " MMK",
             selling_price_formatted: nfObject.format(stock.selling_price) + " MMK",
             fix_price_formatted: nfObject.format(stock.fix_price) + " MMMK",

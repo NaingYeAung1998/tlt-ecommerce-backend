@@ -13,7 +13,7 @@ export class Grade {
     grade_description?: string;
 
     @Column({ default: false, type: 'boolean', nullable: true })
-    isDelete?: boolean;
+    is_delete?: boolean;
 
     @CreateDateColumn()
     created_on: Date;

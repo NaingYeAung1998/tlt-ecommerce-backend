@@ -11,6 +11,7 @@ export declare class UnitController {
         perPage: number;
     }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | import("./entities/unit.entity").Unit[]>;
     findOne(id: string): Promise<import("./entities/unit.entity").Unit>;
+    getUnitHierarchy(id: string): Promise<any[]>;
     update(id: string, updateUnitDto: UpdateUnitDto): Promise<import("typeorm").UpdateResult>;
     remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

@@ -31,6 +31,9 @@ let ProductController = class ProductController {
     findOne(id) {
         return this.productService.findOne(id);
     }
+    findProductUnitHierarchy(id) {
+        return this.productService.findProductUnitHiearchy(id);
+    }
     update(id, updateProductDto) {
         return this.productService.update(id, updateProductDto);
     }
@@ -60,6 +63,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], ProductController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Get)('/getProductUnitHierarchy/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ProductController.prototype, "findProductUnitHierarchy", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),

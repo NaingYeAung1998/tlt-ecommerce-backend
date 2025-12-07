@@ -16,6 +16,10 @@ export declare class StockController {
         currentPage: number;
         perPage: number;
     }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList>;
+    findBySupplier(query: {
+        supplier_id: string;
+        search: string;
+    }): Promise<import("./dto/stock-list.dto").StockListDto[]>;
     findOne(id: string): Promise<import("./dto/stock-list.dto").StockListDto>;
     update(id: string, updateStockDto: UpdateStockDto): Promise<import("typeorm").UpdateResult>;
     remove(id: string): string;

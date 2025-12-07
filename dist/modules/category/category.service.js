@@ -28,16 +28,16 @@ let CategoryService = class CategoryService {
     }
     async findAll(search, currentPage, perPage) {
         if (perPage < 0) {
-            return await this.categoryRepository.find({ where: { isDelete: false }, order: { category_name: 'ASC' } });
+            return await this.categoryRepository.find({ where: { is_delete: false }, order: { category_name: 'ASC' } });
         }
         else {
-            let [data, toatlLength] = await this.categoryRepository.createQueryBuilder("category")
-                .where("category.isDelete = :isDelete AND ( category.category_name Like(:search) OR category.category_description Like(:search))", { isDelete: false, search: `%${search}%` })
+            let [data, totalLength] = await this.categoryRepository.createQueryBuilder("category")
+                .where("category.is_delete = :is_delete AND ( category.category_name Like(:search) OR category.category_description Like(:search))", { is_delete: false, search: `%${search}%` })
                 .orderBy("category.created_on", "DESC")
                 .skip(currentPage * perPage)
                 .take(perPage)
                 .getManyAndCount();
-            return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
+            return this.utilityService.createPaginationList(data, currentPage, perPage, totalLength);
         }
     }
     findOne(id) {
@@ -51,7 +51,7 @@ let CategoryService = class CategoryService {
         if (!category) {
             throw new common_1.HttpException("Category not found", common_1.HttpStatus.NOT_FOUND);
         }
-        category.isDelete = true;
+        category.is_delete = true;
         return this.categoryRepository.update({ category_id: id }, category);
     }
 };

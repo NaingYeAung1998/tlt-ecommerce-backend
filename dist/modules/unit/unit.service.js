@@ -28,30 +28,69 @@ let UnitService = class UnitService {
     }
     async findAll(search, currentPage, perPage) {
         if (perPage < 0) {
-            return await this.unitRepository.find({ where: { isDelete: false }, order: { unit_symbol: 'ASC' } });
+            return await this.unitRepository.find({ where: { is_delete: false }, order: { unit_symbol: 'ASC' } });
         }
         else {
-            let [data, toatlLength] = await this.unitRepository.createQueryBuilder("unit")
-                .where("unit.isDelete = :isDelete AND ( unit.unit_name Like(:search) OR unit.unit_symbol Like(:search))", { isDelete: false, search: `%${search}%` })
+            let [data, totalLength] = await this.unitRepository.createQueryBuilder("unit")
+                .where("unit.is_delete = :is_delete AND ( unit.unit_name Like(:search) OR unit.unit_symbol Like(:search))", { is_delete: false, search: `%${search}%` })
+                .leftJoinAndSelect('unit.parent_unit', 'parent')
                 .orderBy("unit.created_on", "DESC")
                 .skip(currentPage * perPage)
                 .take(perPage)
                 .getManyAndCount();
-            return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
+            return this.utilityService.createPaginationList(data, currentPage, perPage, totalLength);
         }
     }
     findOne(id) {
-        return this.unitRepository.findOne({ where: { unit_id: id } });
+        return this.unitRepository.findOne({ where: { unit_id: id }, relations: ['parent_unit'] });
     }
     update(id, updateUnitDto) {
         return this.unitRepository.update({ unit_id: id }, updateUnitDto);
+    }
+    async roundupUnit(quantity_per_bag, per_bag_unit_id) {
+        let units = await this.unitRepository.find();
+        units.forEach((unit) => {
+        });
+    }
+    async getUnitHierarchy(unit_id) {
+        let units = await this.unitRepository.find({ relations: ['parent_unit'] });
+        let unit = units.find(x => x.unit_id == unit_id);
+        let parentUnits = this.getParentUnits(units, unit, []);
+        let childUnits = this.getChildUnits(units, unit, []);
+        let unitHierarchy = [...parentUnits, unit, ...childUnits];
+        return unitHierarchy;
+    }
+    getParentUnits(units, unit, result) {
+        if (unit.parent_unit) {
+            let parent_unit = units.find(x => x.unit_id == unit.parent_unit.unit_id);
+            if (parent_unit) {
+                result.unshift(parent_unit);
+                return this.getParentUnits(units, parent_unit, result);
+            }
+            else {
+                return result;
+            }
+        }
+        else {
+            return result;
+        }
+    }
+    getChildUnits(units, unit, result) {
+        let child_unit = units.find(x => x.parent_unit?.unit_id == unit.unit_id);
+        if (child_unit) {
+            result.push(child_unit);
+            return this.getChildUnits(units, child_unit, result);
+        }
+        else {
+            return result;
+        }
     }
     async remove(id) {
         let unit = await this.findOne(id);
         if (!unit) {
             throw new common_1.HttpException("Unit not found", common_1.HttpStatus.NOT_FOUND);
         }
-        unit.isDelete = true;
+        unit.is_delete = true;
         return this.unitRepository.update({ unit_id: id }, unit);
     }
 };

@@ -24,6 +24,11 @@ export class StockController {
     return this.stockService.findByProduct(query.product_id, query.search, query.currentPage, query.perPage);
   }
 
+  @Get('/getBySupplier')
+  findBySupplier(@Query() query: { supplier_id: string, search: string }) {
+    return this.stockService.findBySuppleir(query.supplier_id, query.search);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.stockService.findOne(id);

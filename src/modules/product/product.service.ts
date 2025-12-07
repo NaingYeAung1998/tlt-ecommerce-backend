@@ -7,13 +7,15 @@ import { ILike, Repository } from 'typeorm';
 import { UtilityService } from 'src/core/utility/utility.service';
 import { ProductLListDto } from './dto/product-list.dto';
 import { Category } from '../category/entities/category.entity';
+import { UnitService } from '../unit/unit.service';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
-    private utilityService: UtilityService
+    private utilityService: UtilityService,
+    private unitService: UnitService
   ) { }
   async create(createProductDto: CreateProductDto) {
     try {
@@ -32,17 +34,18 @@ export class ProductService {
     let products = [];
     let totalLength = 0
     if (perPage < 0) {
-      let data = await this.productRepository.find({ where: { isDelete: false }, order: { product_name: 'ASC' }, relations: ['category', 'grade'] });
+      let data = await this.productRepository.find({ where: { is_delete: false }, order: { product_name: 'ASC' }, relations: ['category', 'grade'] });
       products = data;
       totalLength = data.length;
     } else {
       let [data, length] = await this.productRepository.createQueryBuilder("product")
-        .where("product.isDelete = :isDelete AND ( product.product_code Like(:search) OR product.product_name Like(:search) OR product.product_description Like(:search))", { isDelete: false, search: `%${search}%` })
+        .where("product.is_delete = :is_delete AND ( product.product_code Like(:search) OR product.product_name Like(:search) OR product.product_description Like(:search))", { is_delete: false, search: `%${search}%` })
         .orderBy("product.created_on", "DESC")
         .skip(currentPage * perPage)
         .take(perPage)
         .leftJoinAndSelect("product.category", "category")
         .leftJoinAndSelect("product.grade", "grade")
+        .leftJoinAndSelect("product.per_bag_unit", "per_bag_unit")
         .getManyAndCount();
 
       products = data
@@ -57,6 +60,7 @@ export class ProductService {
         product_description: product.product_description,
         product_category: product.category?.category_name,
         product_grade: product.grade?.grade_name,
+        product_quantity_per_bag: product.per_bag_unit ? `${product.quantity_per_bag} ${product.per_bag_unit.unit_name}` : "",
         note: product.note,
         created_on: product.created_on
       }
@@ -70,7 +74,25 @@ export class ProductService {
 
   }
   findOne(id: string) {
-    return this.productRepository.findOne({ where: { product_id: id }, relations: ['category', 'grade'] });
+    return this.productRepository.findOne({ where: { product_id: id }, relations: ['category', 'grade', 'per_bag_unit'] });
+  }
+
+  async findProductUnitHiearchy(id: string) {
+    let product = await this.findOne(id);
+    if (!product || !product.per_bag_unit) {
+      throw new HttpException('Please Define Product Unit', HttpStatus.BAD_REQUEST);
+    }
+    let unitHiearchy = await this.unitService.getUnitHierarchy(product.per_bag_unit.unit_id);
+    let bagUnit = { unit_id: process.env.BAG_UNIT_ID, unit_name: process.env.BAG_UNIT_NAME }
+    let bagConnectedUnitIndex = unitHiearchy.findIndex(x => x.unit_id == product.per_bag_unit.unit_id);
+    if (bagConnectedUnitIndex < 0) {
+      throw new HttpException('Please Define Product Unit', HttpStatus.BAD_REQUEST);
+    }
+    unitHiearchy[bagConnectedUnitIndex].parent_unit = bagUnit;
+    unitHiearchy[bagConnectedUnitIndex].quantity_per_parent_unit = product.quantity_per_bag;
+    unitHiearchy.splice(0, bagConnectedUnitIndex);
+    unitHiearchy.unshift(bagUnit);
+    return unitHiearchy;
   }
 
   update(id: string, updateProductDto: UpdateProductDto) {
@@ -82,7 +104,7 @@ export class ProductService {
     if (!product) {
       throw new HttpException("Product not found", HttpStatus.NOT_FOUND)
     }
-    product.isDelete = true;
+    product.is_delete = true;
     return this.productRepository.update({ product_id: id }, product);
   }
 }

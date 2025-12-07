@@ -18,7 +18,7 @@ export class Warehouse {
     note?: string;
 
     @Column({ default: false, type: 'boolean', nullable: true })
-    isDelete?: Boolean
+    is_delete?: Boolean
 
     @CreateDateColumn()
     created_on: Date;

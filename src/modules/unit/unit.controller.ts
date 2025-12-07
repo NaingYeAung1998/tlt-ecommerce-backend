@@ -24,6 +24,11 @@ export class UnitController {
     return this.unitService.findOne(id);
   }
 
+  @Get('/findUnitHierarchy/:id')
+  getUnitHierarchy(@Param('id') id: string) {
+    return this.unitService.getUnitHierarchy(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUnitDto: UpdateUnitDto) {
     return this.unitService.update(id, updateUnitDto);

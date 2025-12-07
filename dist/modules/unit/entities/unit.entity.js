@@ -27,9 +27,13 @@ __decorate([
     __metadata("design:type", String)
 ], Unit.prototype, "unit_symbol", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true, type: 'decimal' }),
+    __metadata("design:type", Number)
+], Unit.prototype, "quantity_per_parent_unit", void 0);
+__decorate([
     (0, typeorm_1.Column)({ default: false, type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
-], Unit.prototype, "isDelete", void 0);
+], Unit.prototype, "is_delete", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
@@ -42,6 +46,15 @@ __decorate([
     (0, typeorm_1.DeleteDateColumn)(),
     __metadata("design:type", Date)
 ], Unit.prototype, "deleted_on", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => Unit, unit => unit.child_units, { nullable: true }),
+    (0, typeorm_1.JoinColumn)({ name: 'parent_unit_id' }),
+    __metadata("design:type", Unit)
+], Unit.prototype, "parent_unit", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => Unit, unit => unit.parent_unit),
+    __metadata("design:type", Array)
+], Unit.prototype, "child_units", void 0);
 exports.Unit = Unit = __decorate([
     (0, typeorm_1.Entity)()
 ], Unit);

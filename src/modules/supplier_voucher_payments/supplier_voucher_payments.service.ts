@@ -32,4 +32,8 @@ export class SupplierVoucherPaymentsService {
   remove(id: number) {
     return `This action removes a #${id} supplierVoucherPayment`;
   }
+
+  removeBatch(payments: SupplierVoucherPayment[]) {
+    return this.supplierVoucherPaymentRepository.remove(payments);
+  }
 }

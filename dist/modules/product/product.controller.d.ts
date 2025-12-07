@@ -9,8 +9,9 @@ export declare class ProductController {
         search: string;
         currentPage: number;
         perPage: number;
-    }): Promise<import("./dto/product-list.dto").ProductLListDto[] | import("../../core/utility/dto/pagination-list.dto").PaginationList>;
+    }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | import("./dto/product-list.dto").ProductLListDto[]>;
     findOne(id: string): Promise<import("./entities/product.entity").Product>;
+    findProductUnitHierarchy(id: string): Promise<any[]>;
     update(id: string, updateProductDto: UpdateProductDto): Promise<import("typeorm").UpdateResult>;
     remove(id: string): Promise<import("typeorm").UpdateResult>;
 }

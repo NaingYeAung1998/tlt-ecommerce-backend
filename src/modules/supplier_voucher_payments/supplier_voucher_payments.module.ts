@@ -9,5 +9,6 @@ import { UtilityModule } from 'src/core/utility/utility.module';
   imports: [TypeOrmModule.forFeature([SupplierVoucherPayment]), UtilityModule],
   controllers: [SupplierVoucherPaymentsController],
   providers: [SupplierVoucherPaymentsService],
+  exports: [SupplierVoucherPaymentsService]
 })
 export class SupplierVoucherPaymentsModule { }

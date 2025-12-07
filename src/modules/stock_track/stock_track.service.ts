@@ -60,7 +60,7 @@ export class StockTrackService {
       );
       return this.convertStockTrackListsToViewListDto(data)
     } else {
-      let [data, toatlLength] = await this.stockTrackRepository.findAndCount({
+      let [data, totalLength] = await this.stockTrackRepository.findAndCount({
         where: [
           { stock: { stock_id: stock_id }, note: ILike(`%${search}%`) }
         ],
@@ -70,7 +70,7 @@ export class StockTrackService {
         relations: ['stock', 'warehouse']
       });
       let trackViewList = this.convertStockTrackListsToViewListDto(data)
-      return this.utilityService.createPaginationList(trackViewList, currentPage, perPage, toatlLength)
+      return this.utilityService.createPaginationList(trackViewList, currentPage, perPage, totalLength)
     }
 
   }

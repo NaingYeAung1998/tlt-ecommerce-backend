@@ -31,6 +31,9 @@ let UnitController = class UnitController {
     findOne(id) {
         return this.unitService.findOne(id);
     }
+    getUnitHierarchy(id) {
+        return this.unitService.getUnitHierarchy(id);
+    }
     update(id, updateUnitDto) {
         return this.unitService.update(id, updateUnitDto);
     }
@@ -60,6 +63,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UnitController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Get)('/findUnitHierarchy/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UnitController.prototype, "getUnitHierarchy", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),

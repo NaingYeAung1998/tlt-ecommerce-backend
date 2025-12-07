@@ -28,16 +28,16 @@ let WarehouseService = class WarehouseService {
     }
     async findAll(search, currentPage, perPage) {
         if (perPage < 0) {
-            return await this.warehouseRepository.find({ where: { isDelete: false }, order: { warehouse_name: 'ASC' } });
+            return await this.warehouseRepository.find({ where: { is_delete: false }, order: { warehouse_name: 'ASC' } });
         }
         else {
-            let [data, toatlLength] = await this.warehouseRepository.createQueryBuilder("warehouse")
-                .where("warehouse.isDelete = :isDelete AND ( warehouse.warehouse_name Like(:search) OR warehouse.warehouse_address Like(:search) OR warehouse.warehouse_phone Like(:search) OR warehouse.note Like(:search))", { isDelete: false, search: `%${search}%` })
+            let [data, totalLength] = await this.warehouseRepository.createQueryBuilder("warehouse")
+                .where("warehouse.is_delete = :is_delete AND ( warehouse.warehouse_name Like(:search) OR warehouse.warehouse_address Like(:search) OR warehouse.warehouse_phone Like(:search) OR warehouse.note Like(:search))", { is_delete: false, search: `%${search}%` })
                 .orderBy("warehouse.created_on", "DESC")
                 .skip(currentPage * perPage)
                 .take(perPage)
                 .getManyAndCount();
-            return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength);
+            return this.utilityService.createPaginationList(data, currentPage, perPage, totalLength);
         }
     }
     findOne(id) {
@@ -51,7 +51,7 @@ let WarehouseService = class WarehouseService {
         if (!warehouse) {
             throw new common_1.HttpException("Warehouse Not Found", common_1.HttpStatus.NOT_FOUND);
         }
-        warehouse.isDelete = true;
+        warehouse.is_delete = true;
         return this.warehouseRepository.update({ warehouse_id: id }, warehouse);
     }
 };

@@ -1,0 +1,3 @@
+export const CODE_ZERO_MIN_INITIALS = 5
+export const SUPPLIER_VOUCHER_INITIALS = "SV-"
+export const PRODUCT_STOCK_INITIALS = "SC-"

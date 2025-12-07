@@ -31,6 +31,9 @@ let StockController = class StockController {
     findByProduct(query) {
         return this.stockService.findByProduct(query.product_id, query.search, query.currentPage, query.perPage);
     }
+    findBySupplier(query) {
+        return this.stockService.findBySuppleir(query.supplier_id, query.search);
+    }
     findOne(id) {
         return this.stockService.findOne(id);
     }
@@ -63,6 +66,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], StockController.prototype, "findByProduct", null);
+__decorate([
+    (0, common_1.Get)('/getBySupplier'),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], StockController.prototype, "findBySupplier", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),

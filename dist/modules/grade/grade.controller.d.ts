@@ -9,7 +9,7 @@ export declare class GradeController {
         search: string;
         currentPage: number;
         perPage: number;
-    }): Promise<import("./entities/grade.entity").Grade[] | import("../../core/utility/dto/pagination-list.dto").PaginationList>;
+    }): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList | import("./entities/grade.entity").Grade[]>;
     findOne(id: string): Promise<import("./entities/grade.entity").Grade>;
     update(id: string, updateGradeDto: UpdateGradeDto): Promise<import("typeorm").UpdateResult>;
     remove(id: string): Promise<import("typeorm").UpdateResult>;

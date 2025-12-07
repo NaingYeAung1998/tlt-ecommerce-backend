@@ -21,6 +21,7 @@ exports.UnitModule = UnitModule = __decorate([
         imports: [typeorm_1.TypeOrmModule.forFeature([unit_entity_1.Unit]), utility_module_1.UtilityModule],
         controllers: [unit_controller_1.UnitController],
         providers: [unit_service_1.UnitService],
+        exports: [unit_service_1.UnitService]
     })
 ], UnitModule);
 //# sourceMappingURL=unit.module.js.map

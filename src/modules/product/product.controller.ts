@@ -24,6 +24,11 @@ export class ProductController {
     return this.productService.findOne(id);
   }
 
+  @Get('/getProductUnitHierarchy/:id')
+  findProductUnitHierarchy(@Param('id') id: string) {
+    return this.productService.findProductUnitHiearchy(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(id, updateProductDto);

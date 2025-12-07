@@ -1,5 +1,6 @@
 import { Category } from "src/modules/category/entities/category.entity";
 import { Grade } from "src/modules/grade/entities/grade.entity";
+import { Unit } from "src/modules/unit/entities/unit.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
@@ -16,11 +17,14 @@ export class Product {
     @Column({ nullable: true })
     product_description?: string;
 
+    @Column({ nullable: true, type: 'decimal' })
+    quantity_per_bag?: number;
+
     @Column({ nullable: true })
     note?: string;
 
     @Column({ default: false, type: 'boolean', nullable: true })
-    isDelete?: boolean;
+    is_delete?: boolean;
 
     @CreateDateColumn()
     created_on: Date;
@@ -39,4 +43,8 @@ export class Product {
     @ManyToOne(() => Grade, grade => grade.products, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'grade_id' })
     grade?: Grade;
+
+    @ManyToOne(() => Unit, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'per_bag_unit_id' })
+    per_bag_unit: Unit;
 }

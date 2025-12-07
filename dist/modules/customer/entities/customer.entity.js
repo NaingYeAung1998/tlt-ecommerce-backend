@@ -37,7 +37,7 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ default: false, type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
-], Customer.prototype, "isDelete", void 0);
+], Customer.prototype, "is_delete", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

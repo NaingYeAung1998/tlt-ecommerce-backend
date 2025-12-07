@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Product = void 0;
 const category_entity_1 = require("../../category/entities/category.entity");
 const grade_entity_1 = require("../../grade/entities/grade.entity");
+const unit_entity_1 = require("../../unit/entities/unit.entity");
 const typeorm_1 = require("typeorm");
 let Product = class Product {
 };
@@ -33,13 +34,17 @@ __decorate([
     __metadata("design:type", String)
 ], Product.prototype, "product_description", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true, type: 'decimal' }),
+    __metadata("design:type", Number)
+], Product.prototype, "quantity_per_bag", void 0);
+__decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Product.prototype, "note", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: false, type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
-], Product.prototype, "isDelete", void 0);
+], Product.prototype, "is_delete", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
@@ -62,6 +67,11 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'grade_id' }),
     __metadata("design:type", grade_entity_1.Grade)
 ], Product.prototype, "grade", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => unit_entity_1.Unit, { nullable: true, onDelete: 'SET NULL' }),
+    (0, typeorm_1.JoinColumn)({ name: 'per_bag_unit_id' }),
+    __metadata("design:type", unit_entity_1.Unit)
+], Product.prototype, "per_bag_unit", void 0);
 exports.Product = Product = __decorate([
     (0, typeorm_1.Entity)()
 ], Product);

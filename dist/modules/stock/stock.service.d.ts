@@ -11,6 +11,7 @@ export declare class StockService {
     create(createStockDto: CreateStockDto): Promise<CreateStockDto & Stock>;
     findAll(search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList>;
     findByProduct(product_id: string, search: string, currentPage: number, perPage: number): Promise<import("../../core/utility/dto/pagination-list.dto").PaginationList>;
+    findBySuppleir(supplier_id: string, search: string): Promise<StockListDto[]>;
     findOne(id: string): Promise<StockListDto>;
     update(id: string, updateStockDto: UpdateStockDto): Promise<import("typeorm").UpdateResult>;
     remove(id: number): string;

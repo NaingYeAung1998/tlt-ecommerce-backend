@@ -9,8 +9,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateStockDto = exports.CreateStockUnitDto = exports.CreateStockSupplierDto = exports.CreateStockProductDto = void 0;
+exports.CreateStockDto = exports.CreateStockWarehouseDto = exports.CreateStockUnitDto = exports.CreateStockSupplierDto = exports.CreateStockProductDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+const create_warehouse_dto_1 = require("../../warehouse/dto/create-warehouse.dto");
 class CreateStockProductDto {
 }
 exports.CreateStockProductDto = CreateStockProductDto;
@@ -32,6 +33,13 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], CreateStockUnitDto.prototype, "unit_id", void 0);
+class CreateStockWarehouseDto {
+}
+exports.CreateStockWarehouseDto = CreateStockWarehouseDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], CreateStockWarehouseDto.prototype, "warehouse_id", void 0);
 class CreateStockDto {
 }
 exports.CreateStockDto = CreateStockDto;
@@ -47,6 +55,10 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", CreateStockSupplierDto)
 ], CreateStockDto.prototype, "supplier", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", create_warehouse_dto_1.CreateWarehouseDto)
+], CreateStockDto.prototype, "warehouse", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", CreateStockUnitDto)

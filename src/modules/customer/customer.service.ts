@@ -21,16 +21,16 @@ export class CustomerService {
 
   async findAll(search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
-      return await this.customerRepository.find({ where: { isDelete: false }, order: { customer_name: 'ASC' } });
+      return await this.customerRepository.find({ where: { is_delete: false }, order: { customer_name: 'ASC' } });
     } else {
-      let [data, toatlLength] = await this.customerRepository.createQueryBuilder("customer")
-        .where("customer.isDelete = :isDelete AND ( customer.customer_name Like(:search) OR customer.customer_address Like(:search) OR customer.customer_phone Like(:search) OR customer.note Like(:search))", { isDelete: false, search: `%${search}%` })
+      let [data, totalLength] = await this.customerRepository.createQueryBuilder("customer")
+        .where("customer.is_delete = :is_delete AND ( customer.customer_name Like(:search) OR customer.customer_address Like(:search) OR customer.customer_phone Like(:search) OR customer.note Like(:search))", { is_delete: false, search: `%${search}%` })
         .orderBy("customer.created_on", "DESC")
         .skip(currentPage * perPage)
         .take(perPage)
         .getManyAndCount();
 
-      return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength)
+      return this.utilityService.createPaginationList(data, currentPage, perPage, totalLength)
     }
 
   }
@@ -48,7 +48,7 @@ export class CustomerService {
     if (!customer) {
       throw new HttpException("Customer not found", HttpStatus.NOT_FOUND);
     }
-    customer.isDelete = true;
+    customer.is_delete = true;
     return this.customerRepository.update({ customer_id: id }, customer);
   }
 }

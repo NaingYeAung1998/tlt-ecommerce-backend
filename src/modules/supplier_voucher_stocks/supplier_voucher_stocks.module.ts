@@ -9,5 +9,6 @@ import { UtilityModule } from 'src/core/utility/utility.module';
   imports: [TypeOrmModule.forFeature([SupplierVoucherStock]), UtilityModule],
   controllers: [SupplierVoucherStocksController],
   providers: [SupplierVoucherStocksService],
+  exports: [SupplierVoucherStocksService]
 })
 export class SupplierVoucherStocksModule { }

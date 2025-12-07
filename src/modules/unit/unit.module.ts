@@ -9,5 +9,6 @@ import { UtilityModule } from 'src/core/utility/utility.module';
   imports: [TypeOrmModule.forFeature([Unit]), UtilityModule],
   controllers: [UnitController],
   providers: [UnitService],
+  exports: [UnitService]
 })
 export class UnitModule { }

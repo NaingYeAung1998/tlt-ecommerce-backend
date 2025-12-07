@@ -14,6 +14,7 @@ const product_entity_1 = require("../../product/entities/product.entity");
 const stock_track_entity_1 = require("../../stock_track/entities/stock_track.entity");
 const supplier_entity_1 = require("../../supplier/entities/supplier.entity");
 const unit_entity_1 = require("../../unit/entities/unit.entity");
+const warehouse_entity_1 = require("../../warehouse/entities/warehouse.entity");
 const typeorm_1 = require("typeorm");
 let Stock = class Stock {
 };
@@ -41,11 +42,27 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ type: 'decimal' }),
     __metadata("design:type", Number)
+], Stock.prototype, "wholesale_selling_price", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal' }),
+    __metadata("design:type", Number)
 ], Stock.prototype, "fix_price", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal' }),
+    __metadata("design:type", Number)
+], Stock.prototype, "wholesale_fix_price", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal' }),
+    __metadata("design:type", Number)
+], Stock.prototype, "wholesale_starting_quantity", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Stock.prototype, "note", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: false, type: 'boolean', nullable: true }),
+    __metadata("design:type", Boolean)
+], Stock.prototype, "is_delete", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
@@ -69,10 +86,20 @@ __decorate([
     __metadata("design:type", unit_entity_1.Unit)
 ], Stock.prototype, "unit", void 0);
 __decorate([
+    (0, typeorm_1.ManyToOne)(() => unit_entity_1.Unit),
+    (0, typeorm_1.JoinColumn)({ name: 'wholesale_starting_unit_id' }),
+    __metadata("design:type", unit_entity_1.Unit)
+], Stock.prototype, "wholesale_starting_unit", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => supplier_entity_1.Supplier),
     (0, typeorm_1.JoinColumn)({ name: 'supplier_id' }),
     __metadata("design:type", supplier_entity_1.Supplier)
 ], Stock.prototype, "supplier", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => warehouse_entity_1.Warehouse),
+    (0, typeorm_1.JoinColumn)({ name: 'warehouse_id' }),
+    __metadata("design:type", warehouse_entity_1.Warehouse)
+], Stock.prototype, "warehouse", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => stock_track_entity_1.StockTrack, stock_track => stock_track.stock),
     __metadata("design:type", Array)

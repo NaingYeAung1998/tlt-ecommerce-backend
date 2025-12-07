@@ -19,16 +19,16 @@ export class SupplierService {
 
   async findAll(search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
-      return await this.supplierRepository.find({ where: { isDelete: false }, order: { supplier_name: 'ASC' } });
+      return await this.supplierRepository.find({ where: { is_delete: false }, order: { supplier_name: 'ASC' } });
     } else {
-      let [data, toatlLength] = await this.supplierRepository.createQueryBuilder("supplier")
-        .where("supplier.isDelete = :isDelete AND ( supplier.supplier_name Like(:search) OR supplier.supplier_address Like(:search) OR supplier.supplier_phone Like(:search) OR supplier.note Like(:search))", { isDelete: false, search: `%${search}%` })
+      let [data, totalLength] = await this.supplierRepository.createQueryBuilder("supplier")
+        .where("supplier.is_delete = :is_delete AND ( supplier.supplier_name Like(:search) OR supplier.supplier_address Like(:search) OR supplier.supplier_phone Like(:search) OR supplier.note Like(:search))", { is_delete: false, search: `%${search}%` })
         .orderBy("supplier.created_on", "DESC")
         .skip(currentPage * perPage)
         .take(perPage)
         .getManyAndCount();
 
-      return this.utilityService.createPaginationList(data, currentPage, perPage, toatlLength)
+      return this.utilityService.createPaginationList(data, currentPage, perPage, totalLength)
     }
 
   }
@@ -46,7 +46,7 @@ export class SupplierService {
     if (!supplier) {
       throw new HttpException("Supplier not found", HttpStatus.NOT_FOUND);
     }
-    supplier.isDelete = true;
+    supplier.is_delete = true;
     return this.supplierRepository.update({ supplier_id: id }, supplier);
   }
 }

@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UtilityService = void 0;
 const common_1 = require("@nestjs/common");
 const pagination_list_dto_1 = require("./dto/pagination-list.dto");
+const constants_1 = require("../constants");
 let UtilityService = class UtilityService {
     createPaginationList(data, currentPage, perPage, totalLength) {
         let paginationList = new pagination_list_dto_1.PaginationList();
@@ -17,6 +18,16 @@ let UtilityService = class UtilityService {
         paginationList.perPage = perPage;
         paginationList.totalLength = totalLength;
         return paginationList;
+    }
+    formatAutoIncrementCode(initials, itemLength) {
+        let formattedCode = initials + "";
+        let currentIndex = itemLength + 1;
+        let zeros = constants_1.CODE_ZERO_MIN_INITIALS - currentIndex.toString().length;
+        for (let i = 0; i < zeros; i++) {
+            formattedCode += "0";
+        }
+        formattedCode += currentIndex.toString();
+        return formattedCode;
     }
 };
 exports.UtilityService = UtilityService;
