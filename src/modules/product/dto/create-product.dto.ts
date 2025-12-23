@@ -9,6 +9,8 @@ export class CreateProductDto {
     product_description?: string;
     @ApiProperty()
     note?: string;
+    @ApiProperty()
+    quantity_per_bag?: number;
     category: CreatePrdocutCategoryDto;
     grade: CreateProductGradeDto;
 }

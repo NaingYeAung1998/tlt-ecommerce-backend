@@ -5,4 +5,10 @@ export class CreateUnitDto {
     unit_name: string;
     @ApiProperty()
     unit_symbol: string;
+    parent_unit?: CreateUnitParentDto
+}
+
+export class CreateUnitParentDto {
+    @ApiProperty()
+    unit_id: string;
 }

@@ -17,7 +17,7 @@ export class Product {
     @Column({ nullable: true })
     product_description?: string;
 
-    @Column({ nullable: true, type: 'decimal' })
+    @Column({ nullable: true, type: 'decimal', scale: 2, precision: 10 })
     quantity_per_bag?: number;
 
     @Column({ nullable: true })
