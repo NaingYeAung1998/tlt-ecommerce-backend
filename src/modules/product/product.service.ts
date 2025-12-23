@@ -40,7 +40,7 @@ export class ProductService {
     } else {
       let [data, length] = await this.productRepository.createQueryBuilder("product")
         .where("product.is_delete = :is_delete AND ( product.product_code Like(:search) OR product.product_name Like(:search) OR product.product_description Like(:search))", { is_delete: false, search: `%${search}%` })
-        .orderBy("product.product_code", "DESC")
+        .orderBy("product.product_code", "ASC")
         .skip(currentPage * perPage)
         .take(perPage)
         .leftJoinAndSelect("product.category", "category")
