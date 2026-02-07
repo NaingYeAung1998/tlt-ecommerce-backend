@@ -1,11 +1,10 @@
-import { Stock } from "src/modules/stock/entities/stock.entity";
-import { SupplierVoucher } from "src/supplier_voucher/entities/supplier_voucher.entity";
+import { Order } from "src/modules/order/entities/order.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 
-@Entity({ name: 'supplier_voucher_payment' })
-export class SupplierVoucherPayment {
+@Entity({ name: 'order_payment' })
+export class OrderPayment {
     @PrimaryColumn({ generated: 'uuid' })
-    payment_id: string;
+    order_payment_id: string;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     amount: number;
@@ -29,7 +28,7 @@ export class SupplierVoucherPayment {
     deleted_on: Date;
 
     //Foreign Keys
-    @ManyToOne(() => SupplierVoucher)
-    @JoinColumn({ name: 'voucher_id' })
-    voucher: SupplierVoucher;
+    @ManyToOne(() => Order)
+    @JoinColumn({ name: 'order_id' })
+    order: Order;
 }

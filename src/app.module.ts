@@ -31,6 +31,11 @@ import { SupplierVoucherPaymentsModule } from './modules/supplier_voucher_paymen
 import { SupplierVoucher } from './supplier_voucher/entities/supplier_voucher.entity';
 import { SupplierVoucherStock } from './modules/supplier_voucher_stocks/entities/supplier_voucher_stock.entity';
 import { SupplierVoucherPayment } from './modules/supplier_voucher_payments/entities/supplier_voucher_payment.entity';
+import { OrderItemsModule } from './modules/order_items/order_items.module';
+import { OrderPaymentsModule } from './modules/order_payments/order_payments.module';
+import { Order } from './modules/order/entities/order.entity';
+import { OrderItem } from './modules/order_items/entities/order_item.entity';
+import { OrderPayment } from './modules/order_payments/entities/order_payment.entity';
 
 
 
@@ -48,11 +53,11 @@ import { SupplierVoucherPayment } from './modules/supplier_voucher_payments/enti
       database: process.env.DATABASE,
       synchronize: process.env.DB_SYNC == 'true',
       autoLoadEntities: true,
-      entities: [Supplier, Category, Grade, Unit, Product, Stock, StockPayment, StockTrack, Warehouse, Customer, SupplierVoucher, SupplierVoucherStock, SupplierVoucherPayment],
+      entities: [Supplier, Category, Grade, Unit, Product, Stock, StockPayment, StockTrack, Warehouse, Customer, SupplierVoucher, SupplierVoucherStock, SupplierVoucherPayment, Order, OrderItem, OrderPayment],
       logger: 'file',
       logging: ["error"]
     }),
-    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule, CustomerModule, OrderModule, SupplierVoucherModule, SupplierVoucherStocksModule, SupplierVoucherPaymentsModule],
+    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule, CustomerModule, OrderModule, SupplierVoucherModule, SupplierVoucherStocksModule, SupplierVoucherPaymentsModule, OrderItemsModule, OrderPaymentsModule],
   controllers: [AppController],
   providers: [AppService],
 })

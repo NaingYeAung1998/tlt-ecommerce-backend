@@ -7,6 +7,8 @@ import { Stock } from './entities/stock.entity';
 import { UtilityService } from 'src/core/utility/utility.service';
 import { StockListDto } from './dto/stock-list.dto';
 import { PRODUCT_STOCK_INITIALS } from 'src/core/constants';
+import { StockTrackStatus } from '../stock_track/entities/stock_track.entity';
+import { StockTrackInfoDto } from '../stock_track/dto/stock_track-list.dto';
 
 @Injectable()
 export class StockService {
@@ -40,17 +42,30 @@ export class StockService {
   }
 
   async findByProduct(product_id: string, search: string, currentPage: number, perPage: number) {
-    let [data, totalLength] = await this.stockRepository.findAndCount({
-      where: [
-        { product: { product_id: product_id }, stock_code: ILike(`%${search}%`) }
-      ],
-      order: { created_on: 'DESC' },
-      skip: currentPage * perPage,
-      take: perPage,
-      relations: ['product', 'supplier', 'unit']
-    });
-    let stockList: StockListDto[] = this.convertStocksToList(data);
-    return this.utilityService.createPaginationList(stockList, currentPage, perPage, totalLength)
+    if (perPage == -1) {
+      let data = await this.stockRepository.find({
+        where: [
+          { product: { product_id: product_id } }
+        ],
+        order: { created_on: 'DESC' },
+        relations: ['product', 'supplier', 'unit']
+      });
+      let stockList: StockListDto[] = this.convertStocksToList(data);
+      return stockList;
+    } else {
+      let [data, totalLength] = await this.stockRepository.findAndCount({
+        where: [
+          { product: { product_id: product_id }, stock_code: ILike(`%${search}%`) }
+        ],
+        order: { created_on: 'DESC' },
+        skip: currentPage * perPage,
+        take: perPage,
+        relations: ['product', 'supplier', 'unit']
+      });
+      let stockList: StockListDto[] = this.convertStocksToList(data);
+      return this.utilityService.createPaginationList(stockList, currentPage, perPage, totalLength)
+    }
+
   }
 
   async findBySuppleir(supplier_id: string, search: string) {
@@ -66,6 +81,20 @@ export class StockService {
 
     let stockList: StockListDto[] = this.convertStocksToList(data);
     return stockList;
+  }
+
+  async getStockTrackInfo(stock_id: string) {
+    let stockInfo: StockTrackInfoDto = await this.stockRepository.createQueryBuilder("stock")
+      .leftJoin("stock.stock_tracks", "stock_track")
+      .leftJoin("stock.product", "product")
+      .groupBy("stock.stock_id")
+      .where("stock.stock_id = :stock_id", { stock_id })
+      .select("stock.*")
+      .addSelect("CONCAT(product.product_name, ' (', product.product_code, ')' )", "stock_product")
+      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.DELIVERD + " THEN stock_track.quantity ELSE 0 END)", "total_delivered")
+      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.STORED + " THEN stock_track.quantity ELSE 0 END)", "total_stored")
+      .getRawOne();
+    return stockInfo;
   }
 
   async findOne(id: string) {
@@ -99,9 +128,9 @@ export class StockService {
     let stockObj: StockListDto = {
       stock_id: stock.stock_id,
       stock_code: stock.stock_code,
-      stock_product: stock.product?.product_name + "(" + stock.product?.product_code + ")",
+      stock_product: stock.product?.product_name + " (" + stock.product?.product_code + ")",
       stock_product_id: stock.product?.product_id,
-      stock_supplier: stock.supplier?.supplier_name + "(" + stock.supplier?.supplier_phone + ")",
+      stock_supplier: stock.supplier?.supplier_name + " (" + stock.supplier?.supplier_phone + ")",
       stock_supplier_id: stock.supplier?.supplier_id,
       stock_warehouse: stock.warehouse?.warehouse_name,
       stock_warehouse_id: stock.warehouse?.warehouse_id,

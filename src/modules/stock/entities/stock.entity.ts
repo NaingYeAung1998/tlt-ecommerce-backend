@@ -15,25 +15,25 @@ export class Stock {
     @Column()
     stock_code: string;
 
-    @Column({ type: 'decimal' })
+    @Column({ type: 'decimal', precision: 18, scale: 2 })
     quantity: number;
 
-    @Column({ type: 'decimal' })
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
     buying_price: number;
 
-    @Column({ type: 'decimal' })
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
     selling_price: number;
 
-    @Column({ type: 'decimal' })
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
     wholesale_selling_price: number;
 
-    @Column({ type: 'decimal' })
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
     fix_price: number;
 
-    @Column({ type: 'decimal' })
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
     wholesale_fix_price: number;
 
-    @Column({ type: 'decimal' })
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
     wholesale_starting_quantity: number;
 
     @Column({ nullable: true })

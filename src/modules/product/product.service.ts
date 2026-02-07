@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { ILike, Repository } from 'typeorm';
 import { UtilityService } from 'src/core/utility/utility.service';
-import { ProductLListDto } from './dto/product-list.dto';
+import { ProductListDto } from './dto/product-list.dto';
 import { Category } from '../category/entities/category.entity';
 import { UnitService } from '../unit/unit.service';
 
@@ -34,7 +34,7 @@ export class ProductService {
     let products = [];
     let totalLength = 0
     if (perPage < 0) {
-      let data = await this.productRepository.find({ where: { is_delete: false }, order: { product_name: 'ASC' }, relations: ['category', 'grade'] });
+      let data = await this.productRepository.find({ where: { is_delete: false }, order: { product_name: 'ASC' }, relations: ['category', 'grade', 'per_bag_unit'] });
       products = data;
       totalLength = data.length;
     } else {
@@ -51,9 +51,9 @@ export class ProductService {
       products = data
       totalLength = length
     }
-    let productList: ProductLListDto[] = [];
+    let productList: ProductListDto[] = [];
     products.forEach((product, index) => {
-      let productObj: ProductLListDto = {
+      let productObj: ProductListDto = {
         product_id: product.product_id,
         product_name: product.product_name,
         product_code: product.product_code,
@@ -61,6 +61,8 @@ export class ProductService {
         product_category: product.category?.category_name,
         product_grade: product.grade?.grade_name,
         product_quantity_per_bag: product.per_bag_unit ? `${product.quantity_per_bag} ${product.per_bag_unit.unit_name}` : "",
+        product_per_bag_qty: product.quantity_per_bag,
+        product_per_bag_unit_id: product.per_bag_unit ? product.per_bag_unit.unit_id : "",
         note: product.note,
         created_on: product.created_on
       }

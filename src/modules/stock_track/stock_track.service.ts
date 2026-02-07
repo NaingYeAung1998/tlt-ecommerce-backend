@@ -53,7 +53,7 @@ export class StockTrackService {
   async findByStock(stock_id: string, search: string, currentPage: number, perPage: number) {
     if (perPage < 0) {
       let data = await this.stockTrackRepository.find({
-        where: [{ stock: { stock_id: stock_id }, note: ILike(`%${search}%`) }],
+        where: [{ stock: { stock_id: stock_id } }],
         order: { checked_date: 'DESC' },
         relations: ['stock', 'warehouse']
       }
@@ -62,12 +62,12 @@ export class StockTrackService {
     } else {
       let [data, totalLength] = await this.stockTrackRepository.findAndCount({
         where: [
-          { stock: { stock_id: stock_id }, note: ILike(`%${search}%`) }
+          { stock: { stock_id: stock_id } }
         ],
         order: { created_on: 'DESC' },
         skip: currentPage * perPage,
         take: perPage,
-        relations: ['stock', 'warehouse']
+        relations: ['stock', 'warehouse', 'unit']
       });
       let trackViewList = this.convertStockTrackListsToViewListDto(data)
       return this.utilityService.createPaginationList(trackViewList, currentPage, perPage, totalLength)
@@ -75,23 +75,12 @@ export class StockTrackService {
 
   }
 
-  async getStockTrackInfo(stock_id: string) {
-    let stockInfo: StockTrackInfoDto = await this.stockTrackRepository.createQueryBuilder("stock_track")
-      .leftJoin("stock_track.stock", "stock")
-      .leftJoin("stock.product", "product")
-      .groupBy("stock.stock_id")
-      .where("stock.stock_id = :stock_id", { stock_id })
-      .select("stock.*")
-      .addSelect("CONCAT(product.product_name, ' (', product.product_code, ')' )", "stock_product")
-      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.DELIVERD + " THEN stock_track.quantity ELSE 0 END)", "total_delivered")
-      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.STORED + " THEN stock_track.quantity ELSE 0 END)", "total_stored")
-      .getRawOne();
-    return stockInfo;
+  async getStockTrackInfo(id: string) {
+    return await this.stockService.getStockTrackInfo(id)
   }
 
-
   findOne(id: string) {
-    return this.stockTrackRepository.findOne({ where: { track_id: id }, relations: ['warehouse'] })
+    return this.stockTrackRepository.findOne({ where: { track_id: id }, relations: ['warehouse', 'unit'] })
   }
 
   async update(id: string, updateStockTrackDto: UpdateStockTrackDto) {
