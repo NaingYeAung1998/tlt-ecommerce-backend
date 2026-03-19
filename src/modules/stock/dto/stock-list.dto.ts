@@ -9,6 +9,8 @@ export class StockListDto {
     stock_warehouse_id: string;
     stock_unit: string;
     stock_unit_id: string;
+    stock_product_per_bag_unit_id: string;
+    stock_product_per_bag_quantity: number;
     quantity: number;
     buying_price: number;
     selling_price: number;

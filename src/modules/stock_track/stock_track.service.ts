@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { StockTrack, StockTrackStatus } from './entities/stock_track.entity';
 import { ILike, Repository } from 'typeorm';
 import { UtilityService } from 'src/core/utility/utility.service';
-import { StockService } from '../stock/stock.service';
 import { StockTrackInfoDto, StockTrackListDto } from './dto/stock_track-list.dto';
 
 
@@ -14,8 +13,7 @@ export class StockTrackService {
   constructor(
     @InjectRepository(StockTrack)
     private stockTrackRepository: Repository<StockTrack>,
-    private utilityService: UtilityService,
-    private stockService: StockService
+    private utilityService: UtilityService
   ) { }
   async create(createStockTrackDto: CreateStockTrackDto) {
     let stockTrackInfo = await this.getStockTrackInfo(createStockTrackDto.stock.stock_id)
@@ -55,7 +53,7 @@ export class StockTrackService {
       let data = await this.stockTrackRepository.find({
         where: [{ stock: { stock_id: stock_id } }],
         order: { checked_date: 'DESC' },
-        relations: ['stock', 'warehouse']
+        relations: ['stock', 'warehouse', 'unit']
       }
       );
       return this.convertStockTrackListsToViewListDto(data)
@@ -75,8 +73,22 @@ export class StockTrackService {
 
   }
 
-  async getStockTrackInfo(id: string) {
-    return await this.stockService.getStockTrackInfo(id)
+  async getStockTrackInfo(stock_id: string) {
+    let stockInfo: StockTrackInfoDto = await this.stockTrackRepository.createQueryBuilder("stock_track")
+      .leftJoin("stock_track.stock", "stock")
+      .leftJoin("stock.product", "product")
+      .groupBy("stock.stock_id")
+      .where("stock.stock_id = :stock_id", { stock_id })
+      .select("stock.*")
+      .addSelect("CONCAT(product.product_name, ' (', product.product_code, ')' )", "stock_product")
+      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.DELIVERD + " THEN stock_track.quantity ELSE 0 END)", "total_delivered")
+      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.STORED + " THEN stock_track.quantity ELSE 0 END)", "total_stored")
+      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.RECEIVED + " THEN stock_track.quantity ELSE 0 END)", "total_received")
+      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.TRANSFERRED + " THEN stock_track.quantity ELSE 0 END)", "total_transferred")
+      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.SOLD + " THEN stock_track.quantity ELSE 0 END)", "total_sold")
+      .getRawOne();
+    stockInfo.total_available = (parseFloat(stockInfo.total_stored.toString()) + parseFloat(stockInfo.total_received.toString())) - (parseFloat(stockInfo.total_transferred.toString()) + parseFloat(stockInfo.total_sold?.toString()))
+    return stockInfo;
   }
 
   findOne(id: string) {
@@ -104,6 +116,14 @@ export class StockTrackService {
     return `This action removes a #${id} stockTrack`;
   }
 
+  removeBatch(tracks: StockTrack[]) {
+    return this.stockTrackRepository.remove(tracks);
+  }
+
+  createBatch(tracks: CreateStockTrackDto[]) {
+    return this.stockTrackRepository.save(tracks);
+  }
+
   convertStockTrackListsToViewListDto(tracks: StockTrack[]) {
     let trackList: StockTrackListDto[] = [];
     tracks.forEach((track, index) => {
@@ -121,7 +141,9 @@ export class StockTrackService {
       status: track.status,
       created_on: track.created_on,
       note: track.note,
-      warehouse_name: track.warehouse?.warehouse_name
+      warehouse_name: track.warehouse?.warehouse_name,
+      unit_id: track.unit?.unit_id,
+      unit_name: track.unit?.unit_name
     }
     return stockTrackObj;
   }

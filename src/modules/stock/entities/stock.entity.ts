@@ -21,21 +21,6 @@ export class Stock {
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     buying_price: number;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    selling_price: number;
-
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    wholesale_selling_price: number;
-
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    fix_price: number;
-
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    wholesale_fix_price: number;
-
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    wholesale_starting_quantity: number;
-
     @Column({ nullable: true })
     note?: string;
 
@@ -60,10 +45,6 @@ export class Stock {
     @JoinColumn({ name: 'unit_id' })
     unit: Unit;
 
-    @ManyToOne(() => Unit)
-    @JoinColumn({ name: 'wholesale_starting_unit_id' })
-    wholesale_starting_unit: Unit;
-
     @ManyToOne(() => Supplier)
     @JoinColumn({ name: 'supplier_id' })
     supplier: Supplier;
@@ -72,6 +53,6 @@ export class Stock {
     @JoinColumn({ name: 'warehouse_id' })
     warehouse: Warehouse;
 
-    @OneToMany(() => StockTrack, stock_track => stock_track.stock)
+    @OneToMany(() => StockTrack, stock_track => stock_track.stock, { cascade: true })
     stock_tracks: StockTrack[];
 }

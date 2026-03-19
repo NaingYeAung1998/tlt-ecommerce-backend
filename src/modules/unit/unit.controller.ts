@@ -19,6 +19,11 @@ export class UnitController {
     return this.unitService.findAll(query.search, query.currentPage, query.perPage);
   }
 
+  @Get('/getUnitHierarchies')
+  getUnitHierarchies() {
+    return this.unitService.getAllUnitHierarchies();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.unitService.findOne(id);

@@ -48,6 +48,22 @@ export class UnitService {
     })
   }
 
+  async getAllUnitHierarchies() {
+    let unitHierarchies = [];
+    let units = await this.unitRepository.find({ relations: ['parent_unit'] });
+    let parentUnits = units.filter(x => x.parent_unit == null && x.unit_id != process.env.BAG_UNIT_ID)
+    parentUnits.forEach(unit => {
+      let parentUnits = this.getParentUnits(units, unit, []);
+
+      let childUnits = this.getChildUnits(units, unit, []);
+
+      let unitHierarchy = [...parentUnits, unit, ...childUnits];
+      unitHierarchies.push(unitHierarchy)
+    })
+
+    return unitHierarchies;
+  }
+
   async getUnitHierarchy(unit_id: string) {
     let units = await this.unitRepository.find({ relations: ['parent_unit'] });
     let unit = units.find(x => x.unit_id == unit_id)

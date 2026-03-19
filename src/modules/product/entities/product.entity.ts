@@ -17,8 +17,26 @@ export class Product {
     @Column({ nullable: true })
     product_description?: string;
 
-    @Column({ nullable: true, type: 'decimal', scale: 2, precision: 10 })
+    @Column({ nullable: true, type: 'decimal', scale: 2, precision: 18 })
+    missing_quantity: number;
+
+    @Column({ nullable: true, type: 'decimal', scale: 2, precision: 18 })
     quantity_per_bag?: number;
+
+    @Column({ type: 'decimal', precision: 18, scale: 2 })
+    selling_price: number;
+
+    @Column({ type: 'decimal', precision: 18, scale: 2 })
+    wholesale_selling_price: number;
+
+    @Column({ type: 'decimal', precision: 18, scale: 2 })
+    fix_price: number;
+
+    @Column({ type: 'decimal', precision: 18, scale: 2 })
+    wholesale_fix_price: number;
+
+    @Column({ type: 'decimal', precision: 18, scale: 2 })
+    wholesale_starting_quantity: number;
 
     @Column({ nullable: true })
     note?: string;
@@ -47,4 +65,9 @@ export class Product {
     @ManyToOne(() => Unit, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'per_bag_unit_id' })
     per_bag_unit: Unit;
+
+    @ManyToOne(() => Unit)
+    @JoinColumn({ name: 'wholesale_starting_unit_id' })
+    wholesale_starting_unit: Unit;
+
 }

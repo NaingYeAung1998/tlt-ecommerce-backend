@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { StockTrack } from "src/modules/stock_track/entities/stock_track.entity";
 import { CreateWarehouseDto } from "src/modules/warehouse/dto/create-warehouse.dto";
 
 export class CreateStockProductDto {
@@ -42,6 +43,8 @@ export class CreateStockDto {
     fix_price: number;
     @ApiProperty()
     note?: string;
+    @ApiProperty()
+    stock_tracks?: StockTrack[]
 }
 
 

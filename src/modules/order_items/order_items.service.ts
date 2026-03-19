@@ -1,9 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOrderItemDto } from './dto/create-order_item.dto';
+import { CreateOrderItemDto, CreateOrderItemStockDto } from './dto/create-order_item.dto';
 import { UpdateOrderItemDto } from './dto/update-order_item.dto';
+import { OrderItem, OrderItemStock } from './entities/order_item.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class OrderItemsService {
+  constructor(
+    @InjectRepository(OrderItem)
+    private orderItemRepository: Repository<OrderItem>,
+    @InjectRepository(OrderItemStock)
+    private orderItemStockRepository: Repository<OrderItemStock>
+  ) { }
   create(createOrderItemDto: CreateOrderItemDto) {
     return 'This action adds a new orderItem';
   }
@@ -22,5 +31,13 @@ export class OrderItemsService {
 
   remove(id: number) {
     return `This action removes a #${id} orderItem`;
+  }
+
+  removeBatch(items: OrderItem[]) {
+    return this.orderItemRepository.remove(items);
+  }
+
+  createOrderItemStockBatch(itemStocks: CreateOrderItemStockDto[]) {
+    return this.orderItemStockRepository.save(itemStocks);
   }
 }

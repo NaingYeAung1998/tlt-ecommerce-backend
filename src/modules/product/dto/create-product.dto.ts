@@ -11,6 +11,12 @@ export class CreateProductDto {
     note?: string;
     @ApiProperty()
     quantity_per_bag?: number;
+    selling_price: number;
+    wholesale_selling_price: number;
+    fix_price: number;
+    wholesale_fix_price: number;
+    wholesale_starting_quantity: number;
+    wholesale_starting_unit: CreateProductUnitDto;
     category: CreatePrdocutCategoryDto;
     grade: CreateProductGradeDto;
 }
@@ -21,4 +27,8 @@ export class CreatePrdocutCategoryDto {
 
 export class CreateProductGradeDto {
     grade_id: string;
+}
+
+export class CreateProductUnitDto {
+    unit_id: string;
 }

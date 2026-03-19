@@ -52,7 +52,7 @@ export class ProductService {
       totalLength = length
     }
     let productList: ProductListDto[] = [];
-    products.forEach((product, index) => {
+    products.forEach((product: Product, index) => {
       let productObj: ProductListDto = {
         product_id: product.product_id,
         product_name: product.product_name,
@@ -63,6 +63,11 @@ export class ProductService {
         product_quantity_per_bag: product.per_bag_unit ? `${product.quantity_per_bag} ${product.per_bag_unit.unit_name}` : "",
         product_per_bag_qty: product.quantity_per_bag,
         product_per_bag_unit_id: product.per_bag_unit ? product.per_bag_unit.unit_id : "",
+        selling_price: product.selling_price,
+        fix_price: product.fix_price,
+        wholesale_selling_price: product.wholesale_selling_price,
+        wholesale_fix_price: product.wholesale_fix_price,
+        wholesale_starting_quantity: product.wholesale_starting_quantity,
         note: product.note,
         created_on: product.created_on
       }
@@ -73,10 +78,10 @@ export class ProductService {
     } else {
       return this.utilityService.createPaginationList(productList, currentPage, perPage, totalLength)
     }
-
   }
+
   findOne(id: string) {
-    return this.productRepository.findOne({ where: { product_id: id }, relations: ['category', 'grade', 'per_bag_unit'] });
+    return this.productRepository.findOne({ where: { product_id: id }, relations: ['category', 'grade', 'per_bag_unit', 'wholesale_starting_unit'] });
   }
 
   async findProductUnitHiearchy(id: string) {

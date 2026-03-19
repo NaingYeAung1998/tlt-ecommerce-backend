@@ -8,7 +8,7 @@ export class StockTrack {
     @PrimaryColumn({ generated: 'uuid' })
     track_id: string;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    @Column({ type: 'decimal', precision: 18, scale: 2 })
     quantity: number;
 
     @Column({ type: 'date' })
@@ -45,5 +45,8 @@ export class StockTrack {
 
 export enum StockTrackStatus {
     DELIVERD = 0,
-    STORED = 1
+    STORED = 1,
+    TRANSFERRED = 2,
+    RECEIVED = 3,
+    SOLD = 4
 }

@@ -7,8 +7,9 @@ import { UtilityModule } from 'src/core/utility/utility.module';
 import { StockModule } from '../stock/stock.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([StockTrack]), UtilityModule, StockModule],
+  imports: [TypeOrmModule.forFeature([StockTrack]), UtilityModule],
   controllers: [StockTrackController],
   providers: [StockTrackService],
+  exports: [StockTrackService]
 })
 export class StockTrackModule { }

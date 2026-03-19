@@ -4,6 +4,10 @@ import { StockListDto } from "src/modules/stock/dto/stock-list.dto";
 export class StockTrackInfoDto extends StockListDto {
     total_delivered?: number;
     total_stored?: number;
+    total_transferred?: number;
+    total_received?: number;
+    total_sold?: number;
+    total_available?: number;
 }
 
 export class StockTrackListDto {
@@ -21,4 +25,6 @@ export class StockTrackListDto {
     note?: string
     @ApiProperty()
     warehouse_name: string;
+    unit_id?: string;
+    unit_name?: string;
 }
