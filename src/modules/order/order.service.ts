@@ -34,11 +34,10 @@ export class OrderService {
       createOrderDto.voucher_code = this.utilityService.formatAutoIncrementCode(CUSTOMER_VOUCHER_INITIALS, orderCount)
       let stockTracks: CreateStockTrackDto[] = [];
       let orderItemStocks: CreateOrderItemStockDto[] = [];
-      createOrderDto.items.forEach(async (item) => {
+      const orderItemPromises = createOrderDto.items.map(async (item) => {
         if (item.quantity > 0) {
           let remainingQuantity = item.quantity;
           let availableStocks = await this.stockService.findAll("", 0, -1, item.product.product_id, null, true, 'ASC');
-          console.log("available stocks:", availableStocks)
           if (availableStocks instanceof Array) {
             item.itemStocks = [];
             for (let i = 0; i < availableStocks.length; i++) {
@@ -71,10 +70,12 @@ export class OrderService {
 
             }
           }
+          console.log("remaing", remainingQuantity)
           item.missing_quantity = remainingQuantity
         }
 
       })
+      await Promise.all(orderItemPromises);
       await this.orderRepository.save(createOrderDto);
       await this.stockTrackService.createBatch(stockTracks);
       return await this.orderItemService.createOrderItemStockBatch(orderItemStocks);

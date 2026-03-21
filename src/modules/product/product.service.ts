@@ -31,48 +31,54 @@ export class ProductService {
   }
 
   async findAll(search: string, currentPage: number, perPage: number) {
-    let products = [];
-    let totalLength = 0
-    if (perPage < 0) {
-      let data = await this.productRepository.find({ where: { is_delete: false }, order: { product_name: 'ASC' }, relations: ['category', 'grade', 'per_bag_unit'] });
-      products = data;
-      totalLength = data.length;
-    } else {
-      let [data, length] = await this.productRepository.createQueryBuilder("product")
-        .where("product.is_delete = :is_delete AND ( product.product_code Like(:search) OR product.product_name Like(:search) OR product.product_description Like(:search))", { is_delete: false, search: `%${search}%` })
-        .orderBy("product.product_code", "ASC")
-        .skip(currentPage * perPage)
-        .take(perPage)
-        .leftJoinAndSelect("product.category", "category")
-        .leftJoinAndSelect("product.grade", "grade")
-        .leftJoinAndSelect("product.per_bag_unit", "per_bag_unit")
-        .getManyAndCount();
-
-      products = data
-      totalLength = length
-    }
     let productList: ProductListDto[] = [];
-    products.forEach((product: Product, index) => {
-      let productObj: ProductListDto = {
-        product_id: product.product_id,
-        product_name: product.product_name,
-        product_code: product.product_code,
-        product_description: product.product_description,
-        product_category: product.category?.category_name,
-        product_grade: product.grade?.grade_name,
-        product_quantity_per_bag: product.per_bag_unit ? `${product.quantity_per_bag} ${product.per_bag_unit.unit_name}` : "",
-        product_per_bag_qty: product.quantity_per_bag,
-        product_per_bag_unit_id: product.per_bag_unit ? product.per_bag_unit.unit_id : "",
-        selling_price: product.selling_price,
-        fix_price: product.fix_price,
-        wholesale_selling_price: product.wholesale_selling_price,
-        wholesale_fix_price: product.wholesale_fix_price,
-        wholesale_starting_quantity: product.wholesale_starting_quantity,
-        note: product.note,
-        created_on: product.created_on
-      }
-      productList.push(productObj);
-    })
+    let totalLength = 0
+
+    let queryBuilder = `
+        SELECT 
+    p.product_id,
+    p.product_name,
+    p.product_code,
+    p.product_description,
+    c.category_name AS product_category,
+    g.grade_name AS product_grade,
+    CASE 
+        WHEN pbu.unit_id IS NOT NULL THEN CONCAT(p.quantity_per_bag, ' ', pbu.unit_name)
+        ELSE ''
+    END AS product_quantity_per_bag,
+    p.quantity_per_bag AS product_per_bag_qty,
+    COALESCE(pbu.unit_id, '') AS product_per_bag_unit_id,
+    p.selling_price,
+    p.fix_price,
+    p.wholesale_selling_price,
+    p.wholesale_fix_price,
+    p.wholesale_starting_quantity,
+    oid.total_missing_quantity AS missing_quantity,
+    oid.unit_id AS lowest_unit_id,
+    p.note,
+    p.created_on,
+    COUNT(*) OVER() as total_count
+FROM product p
+LEFT JOIN category c ON p.category_id = c.category_id
+LEFT JOIN grade g ON p.grade_id = g.grade_id
+LEFT JOIN unit pbu ON p.per_bag_unit_id = pbu.unit_id
+LEFT JOIN (SELECT oi.product_id, oi.unit_id, SUM(oi.missing_quantity) total_missing_quantity FROM order_item oi GROUP BY oi.product_id, oi.unit_id) 
+oid ON oid.product_id = p.product_id
+WHERE p.is_delete = false
+  AND (
+      p.product_code LIKE '%${search ? search : ''}%'
+      OR p.product_name LIKE  '%${search ? search : ''}%'
+      OR p.product_description LIKE '%${search ? search : ''}%'
+  )
+ORDER BY p.product_code ASC
+      `;
+    if (perPage >= 0) {
+      queryBuilder += `LIMIT ${perPage} OFFSET ${currentPage * perPage};`
+    }
+    productList = await this.productRepository.query(queryBuilder);
+    if (productList && productList.length > 0) {
+      totalLength = productList[0].total_count
+    }
     if (perPage < 0) {
       return productList;
     } else {

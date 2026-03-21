@@ -13,6 +13,9 @@ export class ProductListDto {
     fix_price: number;
     wholesale_fix_price: number;
     wholesale_starting_quantity: number;
+    missing_quantity?: number;
+    lowest_unit_id: string;
     note: string;
     created_on: Date;
+    total_count?: number
 }

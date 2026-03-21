@@ -74,20 +74,42 @@ export class StockTrackService {
   }
 
   async getStockTrackInfo(stock_id: string) {
-    let stockInfo: StockTrackInfoDto = await this.stockTrackRepository.createQueryBuilder("stock_track")
-      .leftJoin("stock_track.stock", "stock")
-      .leftJoin("stock.product", "product")
-      .groupBy("stock.stock_id")
-      .where("stock.stock_id = :stock_id", { stock_id })
-      .select("stock.*")
-      .addSelect("CONCAT(product.product_name, ' (', product.product_code, ')' )", "stock_product")
-      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.DELIVERD + " THEN stock_track.quantity ELSE 0 END)", "total_delivered")
-      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.STORED + " THEN stock_track.quantity ELSE 0 END)", "total_stored")
-      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.RECEIVED + " THEN stock_track.quantity ELSE 0 END)", "total_received")
-      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.TRANSFERRED + " THEN stock_track.quantity ELSE 0 END)", "total_transferred")
-      .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.SOLD + " THEN stock_track.quantity ELSE 0 END)", "total_sold")
-      .getRawOne();
-    stockInfo.total_available = (parseFloat(stockInfo.total_stored.toString()) + parseFloat(stockInfo.total_received.toString())) - (parseFloat(stockInfo.total_transferred.toString()) + parseFloat(stockInfo.total_sold?.toString()))
+    let queryBuilder = `
+      SELECT stock.*, 
+      CONCAT(product.product_name, ' (', product.product_code, ')' ) as stock_product,
+      SUM(CASE WHEN stock_track.status = ${StockTrackStatus.DELIVERD} THEN stock_track.quantity ELSE 0 END) as total_delivered,
+      SUM(CASE WHEN stock_track.status = ${StockTrackStatus.STORED} THEN stock_track.quantity ELSE 0 END) as total_stored,
+      SUM(CASE WHEN stock_track.status = ${StockTrackStatus.RECEIVED} THEN stock_track.quantity ELSE 0 END) as total_received,
+      SUM(CASE WHEN stock_track.status = ${StockTrackStatus.TRANSFERRED} THEN stock_track.quantity ELSE 0 END) as total_transferred,
+      SUM(CASE WHEN stock_track.status = ${StockTrackStatus.SOLD} THEN stock_track.quantity ELSE 0 END) as total_sold
+      FROM stock_track
+      RIGHT JOIN stock on stock.stock_id = stock_track.stock_id
+      LEFT JOIN product on stock.product_id = product.product_id
+      WHERE stock.stock_id = '${stock_id}'
+      GROUP BY stock.stock_id
+      LIMIT 1
+    `;
+    let stockInfo: StockTrackInfoDto = new StockTrackInfoDto();
+    let result = await this.stockTrackRepository.query(queryBuilder);
+    if (result.length > 0) {
+      stockInfo = result[0];
+      stockInfo.total_available = (parseFloat(stockInfo.total_stored.toString()) + parseFloat(stockInfo.total_received.toString())) - (parseFloat(stockInfo.total_transferred.toString()) + parseFloat(stockInfo.total_sold?.toString()))
+    }
+
+    // let stockInfo: StockTrackInfoDto = await this.stockTrackRepository.createQueryBuilder("stock_track")
+    //   .leftJoin("stock_track.stock", "stock")
+    //   .leftJoin("stock.product", "product")
+    //   .groupBy("stock.stock_id")
+    //   .where("stock.stock_id = :stock_id", { stock_id })
+    //   .select("stock.*")
+    //   .addSelect("CONCAT(product.product_name, ' (', product.product_code, ')' )", "stock_product")
+    //   .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.DELIVERD + " THEN stock_track.quantity ELSE 0 END)", "total_delivered")
+    //   .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.STORED + " THEN stock_track.quantity ELSE 0 END)", "total_stored")
+    //   .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.RECEIVED + " THEN stock_track.quantity ELSE 0 END)", "total_received")
+    //   .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.TRANSFERRED + " THEN stock_track.quantity ELSE 0 END)", "total_transferred")
+    //   .addSelect("SUM(CASE WHEN stock_track.status =" + StockTrackStatus.SOLD + " THEN stock_track.quantity ELSE 0 END)", "total_sold")
+    //   .getRawOne();
+    // stockInfo.total_available = (parseFloat(stockInfo.total_stored.toString()) + parseFloat(stockInfo.total_received.toString())) - (parseFloat(stockInfo.total_transferred.toString()) + parseFloat(stockInfo.total_sold?.toString()))
     return stockInfo;
   }
 
