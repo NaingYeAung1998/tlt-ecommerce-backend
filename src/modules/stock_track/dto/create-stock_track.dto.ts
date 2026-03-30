@@ -17,6 +17,10 @@ export class CreateStockTrackUnitDto {
     unit_id: string;
 }
 
+export class CreateStockTrackFromTrackDto {
+    track_id: string;
+}
+
 export class CreateStockTrackDto {
     @ApiProperty()
     quantity: number;
@@ -32,4 +36,23 @@ export class CreateStockTrackDto {
     unit: CreateStockUnitDto
     @ApiProperty()
     warehouse: CreateStockTrackWarehouseDto;
+    @ApiProperty()
+    from_track: CreateStockTrackFromTrackDto;
+}
+
+export class TransferStockTrackDto {
+    @ApiProperty()
+    quantity: number;
+    @ApiProperty()
+    transfer_date: Date;
+    @ApiProperty()
+    note?: string;
+    @ApiProperty()
+    stock: CreateStockTrackStockDto;
+    @ApiProperty()
+    unit: CreateStockUnitDto;
+    @ApiProperty()
+    fromWarehouse: CreateStockTrackWarehouseDto;
+    @ApiProperty()
+    toWarehouse: CreateStockTrackWarehouseDto;
 }

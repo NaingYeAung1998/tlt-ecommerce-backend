@@ -9,38 +9,38 @@ import { ApiTags } from '@nestjs/swagger';
 export class StockPaymentController {
   constructor(private readonly stockPaymentService: StockPaymentService) { }
 
-  @Post()
-  create(@Body() createStockPaymentDto: CreateStockPaymentDto) {
-    return this.stockPaymentService.create(createStockPaymentDto);
-  }
+  // @Post()
+  // create(@Body() createStockPaymentDto: CreateStockPaymentDto) {
+  //   return this.stockPaymentService.create(createStockPaymentDto);
+  // }
 
-  @Get()
-  findAll(@Query() query: { search: string, currentPage: number, perPage: number }) {
-    return this.stockPaymentService.findAll(query.search, query.currentPage, query.perPage);
-  }
+  // @Get()
+  // findAll(@Query() query: { search: string, currentPage: number, perPage: number }) {
+  //   return this.stockPaymentService.findAll(query.search, query.currentPage, query.perPage);
+  // }
 
-  @Get('/getByStock')
-  findByProduct(@Query() query: { stock_id: string, search: string, currentPage: number, perPage: number }) {
-    return this.stockPaymentService.findByStock(query.stock_id, query.search, query.currentPage, query.perPage);
-  }
+  // @Get('/getByStock')
+  // findByProduct(@Query() query: { stock_id: string, search: string, currentPage: number, perPage: number }) {
+  //   return this.stockPaymentService.findByStock(query.stock_id, query.search, query.currentPage, query.perPage);
+  // }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.stockPaymentService.findOne(id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.stockPaymentService.findOne(id);
+  // }
 
-  @Get('/getInfo/:id')
-  findInfo(@Param('id') id: string) {
-    return this.stockPaymentService.getStockPaymentInfo(id);
-  }
+  // @Get('/getInfo/:id')
+  // findInfo(@Param('id') id: string) {
+  //   return this.stockPaymentService.getStockPaymentInfo(id);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStockPaymentDto: UpdateStockPaymentDto) {
-    return this.stockPaymentService.update(id, updateStockPaymentDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateStockPaymentDto: UpdateStockPaymentDto) {
+  //   return this.stockPaymentService.update(id, updateStockPaymentDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.stockPaymentService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.stockPaymentService.remove(+id);
+  // }
 }

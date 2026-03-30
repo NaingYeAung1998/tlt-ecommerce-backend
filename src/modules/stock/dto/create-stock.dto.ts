@@ -38,6 +38,8 @@ export class CreateStockDto {
     @ApiProperty()
     buying_price: number;
     @ApiProperty()
+    buying_price_lowest_unit: number;
+    @ApiProperty()
     selling_price: number;
     @ApiProperty()
     fix_price: number;

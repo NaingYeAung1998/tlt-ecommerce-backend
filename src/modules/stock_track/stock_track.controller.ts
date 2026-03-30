@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { StockTrackService } from './stock_track.service';
-import { CreateStockTrackDto } from './dto/create-stock_track.dto';
+import { CreateStockTrackDto, TransferStockTrackDto } from './dto/create-stock_track.dto';
 import { UpdateStockTrackDto } from './dto/update-stock_track.dto';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -12,6 +12,11 @@ export class StockTrackController {
   @Post()
   create(@Body() createStockTrackDto: CreateStockTrackDto) {
     return this.stockTrackService.create(createStockTrackDto);
+  }
+
+  @Post('/transfer')
+  transfer(@Body() transerStockTrackDto: TransferStockTrackDto) {
+    return this.stockTrackService.transferTrack(transerStockTrackDto);
   }
 
   @Get()
@@ -32,6 +37,11 @@ export class StockTrackController {
   @Get('/getInfo/:id')
   findInfo(@Param('id') id: string) {
     return this.stockTrackService.getStockTrackInfo(id);
+  }
+
+  @Get('/getInfoByWarehouse/:id/:warehouseId')
+  findInfoByWarehouse(@Param('id') id: string, @Param('warehouseId') warehouseId: string) {
+    return this.stockTrackService.getStockTrackInfo(id, warehouseId);
   }
 
   @Patch(':id')

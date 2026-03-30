@@ -38,7 +38,7 @@ export class SupplierVoucherService {
       .leftJoin(subQuery => {
         return subQuery
           .select('voucher_stock.voucher_id')
-          .addSelect('SUM(stock.buying_price)', 'buying_amount')
+          .addSelect('SUM(stock.buying_price_lowest_unit * stock.quantity)', 'buying_amount')
           .from('supplier_voucher_stock', 'voucher_stock')
           .leftJoin('stock', 'stock', 'voucher_stock.stock_id = stock.stock_id')
           .groupBy('voucher_stock.voucher_id, voucher_stock.deleted_on');

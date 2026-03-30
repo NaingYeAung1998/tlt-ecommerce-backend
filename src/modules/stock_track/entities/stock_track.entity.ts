@@ -1,7 +1,7 @@
 import { Stock } from "src/modules/stock/entities/stock.entity";
 import { Unit } from "src/modules/unit/entities/unit.entity";
 import { Warehouse } from "src/modules/warehouse/entities/warehouse.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 
 @Entity({ name: 'stock_track' })
 export class StockTrack {
@@ -41,6 +41,10 @@ export class StockTrack {
     @ManyToOne(() => Warehouse)
     @JoinColumn({ name: 'warehouse_id' })
     warehouse: Warehouse;
+
+    @OneToOne(() => StockTrack)
+    @JoinColumn({ name: 'from_track_id' })
+    from_track: StockTrack;
 }
 
 export enum StockTrackStatus {

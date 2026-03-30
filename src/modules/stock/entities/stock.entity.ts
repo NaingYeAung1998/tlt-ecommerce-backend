@@ -18,8 +18,11 @@ export class Stock {
     @Column({ type: 'decimal', precision: 18, scale: 2 })
     quantity: number;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    @Column({ type: 'decimal', precision: 18, scale: 2 })
     buying_price: number;
+
+    @Column({ type: 'decimal', precision: 18, scale: 18 })
+    buying_price_lowest_unit: number;
 
     @Column({ nullable: true })
     note?: string;

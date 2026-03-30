@@ -47,6 +47,7 @@ export class OrderService {
               stockTrack.unit = item.unit;
               stockTrack.checked_date = createOrderDto.order_date;
               stockTrack.stock = { stock_id: stock.stock_id };
+              stockTrack.warehouse = { warehouse_id: process.env.MAIN_WAREHOUSE_ID }
               stockTrack.status = StockTrackStatus.SOLD
 
               let itemStock = new CreateOrderItemStockDto();
@@ -58,6 +59,7 @@ export class OrderService {
                 stockTracks.push(stockTrack)
                 itemStock.quantity = remainingQuantity;
                 orderItemStocks.push(itemStock);
+                remainingQuantity = 0;
                 break;
               }
               else {
@@ -70,7 +72,6 @@ export class OrderService {
 
             }
           }
-          console.log("remaing", remainingQuantity)
           item.missing_quantity = remainingQuantity
         }
 

@@ -90,21 +90,23 @@ export class StockService {
   }
 
   async findOne(id: string) {
-    let stock = await this.stockRepository.findOne({ where: { stock_id: id }, relations: ['product', 'supplier', 'unit', 'wholesale_starting_unit', 'warehouse', 'stock_tracks'] });
+    let stock = await this.stockRepository.findOne({ where: { stock_id: id }, relations: ['product', 'supplier', 'unit', 'warehouse', 'stock_tracks', 'product.grade'] });
     if (!stock) {
       throw new HttpException('Stock not found', HttpStatus.NOT_FOUND)
     }
-    return this.convertStockToViewDto(stock);
+    return stock;
   }
 
   async update(id: string, updateStockDto: UpdateStockDto) {
-    let stock = await this.stockRepository.findOne({ where: { stock_id: id }, relations: ['product', 'supplier', 'unit', 'wholesale_starting_unit', 'warehouse', 'stock_tracks'] });
-    if (!stock) {
-      throw new HttpException('Cannot find stock', HttpStatus.BAD_REQUEST)
-    }
-    await this.stockTrackService.removeBatch(stock.stock_tracks);
-    stock.stock_tracks = updateStockDto.stock_tracks
-    return this.stockRepository.save(stock);
+    // let stock = await this.stockRepository.findOne({ where: { stock_id: id }, relations: ['product', 'supplier', 'unit', 'warehouse', 'stock_tracks'] });
+    // if (!stock) {
+    //   throw new HttpException('Cannot find stock', HttpStatus.BAD_REQUEST)
+    // }
+    // await this.stockTrackService.removeBatch(stock.stock_tracks);
+    // stock.stock_tracks = updateStockDto.stock_tracks
+    // return this.stockRepository.save(stock);
+    updateStockDto.stock_tracks = undefined;
+    return this.stockRepository.update({ stock_id: id }, updateStockDto)
   }
 
   remove(id: number) {

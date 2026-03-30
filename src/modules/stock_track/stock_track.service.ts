@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateStockTrackDto } from './dto/create-stock_track.dto';
+import { CreateStockTrackDto, TransferStockTrackDto } from './dto/create-stock_track.dto';
 import { UpdateStockTrackDto } from './dto/update-stock_track.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StockTrack, StockTrackStatus } from './entities/stock_track.entity';
@@ -28,7 +28,7 @@ export class StockTrackService {
         throw new HttpException('Storeable quantity exceeds', HttpStatus.BAD_REQUEST);
       }
     }
-    return this.stockTrackRepository.save(createStockTrackDto);
+    return await this.stockTrackRepository.save(createStockTrackDto);
   }
 
   async findAll(search: string, currentPage: number, perPage: number) {
@@ -73,7 +73,7 @@ export class StockTrackService {
 
   }
 
-  async getStockTrackInfo(stock_id: string) {
+  async getStockTrackInfo(stock_id: string, warehouse_id?: string) {
     let queryBuilder = `
       SELECT stock.*, 
       CONCAT(product.product_name, ' (', product.product_code, ')' ) as stock_product,
@@ -86,6 +86,7 @@ export class StockTrackService {
       RIGHT JOIN stock on stock.stock_id = stock_track.stock_id
       LEFT JOIN product on stock.product_id = product.product_id
       WHERE stock.stock_id = '${stock_id}'
+      ${warehouse_id ? ("AND stock_track.warehouse_id = '" + warehouse_id + "'") : ""}
       GROUP BY stock.stock_id
       LIMIT 1
     `;
@@ -144,6 +145,29 @@ export class StockTrackService {
 
   createBatch(tracks: CreateStockTrackDto[]) {
     return this.stockTrackRepository.save(tracks);
+  }
+
+  async transferTrack(transferTrack: TransferStockTrackDto) {
+    let fromTrack = new CreateStockTrackDto();
+    fromTrack.checked_date = transferTrack.transfer_date;
+    fromTrack.note = transferTrack.note;
+    fromTrack.quantity = transferTrack.quantity;
+    fromTrack.stock = transferTrack.stock;
+    fromTrack.unit = transferTrack.unit;
+    fromTrack.warehouse = transferTrack.fromWarehouse;
+    fromTrack.status = StockTrackStatus.TRANSFERRED;
+    let fromTrackEntity = await this.create(fromTrack);
+
+    let toTrack = new CreateStockTrackDto();
+    toTrack.checked_date = transferTrack.transfer_date;
+    toTrack.note = transferTrack.note;
+    toTrack.quantity = transferTrack.quantity;
+    toTrack.stock = transferTrack.stock;
+    toTrack.unit = transferTrack.unit;
+    toTrack.warehouse = transferTrack.toWarehouse;
+    toTrack.status = StockTrackStatus.RECEIVED;
+    toTrack.from_track = { track_id: fromTrackEntity.track_id }
+    return await this.create(toTrack);
   }
 
   convertStockTrackListsToViewListDto(tracks: StockTrack[]) {
