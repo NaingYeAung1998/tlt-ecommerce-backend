@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,7 +6,7 @@ import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
 import { UtilityService } from 'src/core/utility/utility.service';
 import { CUSTOMER_VOUCHER_INITIALS } from 'src/core/constants';
-import { OrderListDto } from './dto/order-list.dto';
+import { MissingStockOrderListDto, OrderListDto } from './dto/order-list.dto';
 import { OrderItemsService } from '../order_items/order_items.service';
 import { OrderPaymentsService } from '../order_payments/order_payments.service';
 import { CreateStockTrackDto } from '../stock_track/dto/create-stock_track.dto';
@@ -16,6 +16,9 @@ import { StockService } from '../stock/stock.service';
 import { StockTrackInfoDto } from '../stock_track/dto/stock_track-list.dto';
 import { OrderItemStock } from '../order_items/entities/order_item.entity';
 import { CreateOrderItemStockDto } from '../order_items/dto/create-order_item.dto';
+import { CreateOrderTrackDto } from '../order-track/dto/create-order-track.dto';
+import { OrderTrackService } from '../order-track/order-track.service';
+import { OrderTrack } from '../order-track/entities/order-track.entity';
 
 @Injectable()
 export class OrderService {
@@ -25,8 +28,10 @@ export class OrderService {
     private utilityService: UtilityService,
     private orderItemService: OrderItemsService,
     private orderPaymentService: OrderPaymentsService,
+    @Inject(forwardRef(() => StockService))
     private stockService: StockService,
-    private stockTrackService: StockTrackService
+    private stockTrackService: StockTrackService,
+    private orderTrackService: OrderTrackService
   ) { }
   async create(createOrderDto: CreateOrderDto) {
     try {
@@ -113,7 +118,7 @@ export class OrderService {
   }
 
   findOne(id: string) {
-    return this.orderRepository.findOne({ where: { order_id: id }, relations: ['items', 'customer', 'payments', 'items.product', 'items.unit', 'items.itemStocks'] });
+    return this.orderRepository.findOne({ where: { order_id: id }, relations: ['items', 'customer', 'payments', 'items.product', 'items.unit', 'items.product.per_bag_unit', 'items.itemStocks', 'items.itemTracks'] });
   }
 
   async update(id: string, updateOrderDto: UpdateOrderDto) {
@@ -128,6 +133,33 @@ export class OrderService {
     return this.orderRepository.save(order);
   }
 
+  async updatePayments(id: string, updateOrderDto: UpdateOrderDto) {
+    let order = await this.findOne(id);
+    if (!order) {
+      throw new HttpException('Cannot find order', HttpStatus.BAD_REQUEST)
+    }
+    await this.orderPaymentService.removeBatch(order.payments);
+    order.payments = updateOrderDto.payments;
+    return this.orderRepository.save(order);
+  }
+
+  async updateTracks(id: string, createOrderTrackDto: CreateOrderTrackDto[]) {
+    let order = await this.orderRepository.findOne({ where: { order_id: id }, relations: ["items", "items.itemTracks"] })
+    if (order) {
+      let itemTracks: OrderTrack[] = []
+      order.items.forEach((item, index) => {
+        item.itemTracks.forEach((track, j) => {
+          itemTracks.push(track);
+        })
+      })
+      if (itemTracks.length > 0) {
+        this.orderTrackService.removeBatch(itemTracks);
+      }
+      this.orderTrackService.createBatch(createOrderTrackDto);
+    }
+
+  }
+
   async remove(id: string) {
     let order = await this.findOne(id);
     if (!order) {
@@ -135,5 +167,30 @@ export class OrderService {
     }
     order.is_delete = true;
     return this.orderRepository.save(order);
+  }
+
+  async getMissingStockOrders(product_id: string) {
+    const query = `
+      SELECT o.order_id,
+      oi.product_id,
+      oi.order_item_id,
+      oi.quantity as total_item_quantity,
+      IFNULL(ois.total_quantity, 0) as total_stock_quantity,
+      (oi.quantity - IFNULL(ois.total_quantity, 0)) as missing_quantity,
+      oi.unit_id
+      from tlt_ecommerce_db.order o
+      left join tlt_ecommerce_db.order_item oi on oi.order_id = o.order_id
+      left join (
+		SELECT ois.order_item_id,
+			SUM(ois.quantity) as total_quantity
+            from tlt_ecommerce_db.order_item_stock ois
+            group by ois.order_item_id
+      ) ois on ois.order_item_id = oi.order_item_id
+      where oi.quantity > IFNULL(ois.total_quantity, 0)
+      and oi.product_id = '${product_id}'
+      order by o.created_on;
+    `
+    const result: MissingStockOrderListDto[] = await this.orderRepository.query(query);
+    return result;
   }
 }

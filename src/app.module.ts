@@ -36,6 +36,8 @@ import { OrderPaymentsModule } from './modules/order_payments/order_payments.mod
 import { Order } from './modules/order/entities/order.entity';
 import { OrderItem } from './modules/order_items/entities/order_item.entity';
 import { OrderPayment } from './modules/order_payments/entities/order_payment.entity';
+import { OrderTrackModule } from './modules/order-track/order-track.module';
+import { OrderTrack } from './modules/order-track/entities/order-track.entity';
 
 
 
@@ -53,11 +55,11 @@ import { OrderPayment } from './modules/order_payments/entities/order_payment.en
       database: process.env.DATABASE,
       synchronize: process.env.DB_SYNC == 'true',
       autoLoadEntities: true,
-      entities: [Supplier, Category, Grade, Unit, Product, Stock, StockPayment, StockTrack, Warehouse, Customer, SupplierVoucher, SupplierVoucherStock, SupplierVoucherPayment, Order, OrderItem, OrderPayment],
+      entities: [Supplier, Category, Grade, Unit, Product, Stock, StockPayment, StockTrack, Warehouse, Customer, SupplierVoucher, SupplierVoucherStock, SupplierVoucherPayment, Order, OrderItem, OrderPayment, OrderTrack],
       logger: 'file',
       logging: ["error"]
     }),
-    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule, CustomerModule, OrderModule, SupplierVoucherModule, SupplierVoucherStocksModule, SupplierVoucherPaymentsModule, OrderItemsModule, OrderPaymentsModule],
+    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule, CustomerModule, OrderModule, SupplierVoucherModule, SupplierVoucherStocksModule, SupplierVoucherPaymentsModule, OrderItemsModule, OrderPaymentsModule, OrderTrackModule],
   controllers: [AppController],
   providers: [AppService],
 })

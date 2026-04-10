@@ -1,3 +1,4 @@
+import { OrderTrack } from "src/modules/order-track/entities/order-track.entity";
 import { Order } from "src/modules/order/entities/order.entity";
 import { Product } from "src/modules/product/entities/product.entity";
 import { Stock } from "src/modules/stock/entities/stock.entity";
@@ -34,6 +35,9 @@ export class OrderItem {
 
     @OneToMany(() => OrderItemStock, order_item_stock => order_item_stock.order_item)
     itemStocks: OrderItemStock[];
+
+    @OneToMany(() => OrderTrack, order_track => order_track.order_item)
+    itemTracks: OrderTrack[];
 
     @Column({ default: false, type: 'boolean', nullable: true })
     is_delete?: boolean

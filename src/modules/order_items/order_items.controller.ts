@@ -5,7 +5,7 @@ import { UpdateOrderItemDto } from './dto/update-order_item.dto';
 
 @Controller('order-items')
 export class OrderItemsController {
-  constructor(private readonly orderItemsService: OrderItemsService) {}
+  constructor(private readonly orderItemsService: OrderItemsService) { }
 
   @Post()
   create(@Body() createOrderItemDto: CreateOrderItemDto) {
@@ -18,8 +18,13 @@ export class OrderItemsController {
   }
 
   @Get(':id')
+  findByOrder(@Param('id') id: string) {
+    return this.orderItemsService.findByOrder(id);
+  }
+
+  @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.orderItemsService.findOne(+id);
+    return this.orderItemsService.findOne(id);
   }
 
   @Patch(':id')

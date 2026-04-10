@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateStockTrackDto, TransferStockTrackDto } from './dto/create-stock_track.dto';
 import { UpdateStockTrackDto } from './dto/update-stock_track.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,8 @@ import { StockTrack, StockTrackStatus } from './entities/stock_track.entity';
 import { ILike, Repository } from 'typeorm';
 import { UtilityService } from 'src/core/utility/utility.service';
 import { StockTrackInfoDto, StockTrackListDto } from './dto/stock_track-list.dto';
+import { StockService } from '../stock/stock.service';
+import { CreateStockDto } from '../stock/dto/create-stock.dto';
 
 
 @Injectable()
@@ -13,7 +15,9 @@ export class StockTrackService {
   constructor(
     @InjectRepository(StockTrack)
     private stockTrackRepository: Repository<StockTrack>,
-    private utilityService: UtilityService
+    private utilityService: UtilityService,
+    @Inject(forwardRef(() => StockService))
+    private stockService: StockService
   ) { }
   async create(createStockTrackDto: CreateStockTrackDto) {
     let stockTrackInfo = await this.getStockTrackInfo(createStockTrackDto.stock.stock_id)
@@ -28,7 +32,16 @@ export class StockTrackService {
         throw new HttpException('Storeable quantity exceeds', HttpStatus.BAD_REQUEST);
       }
     }
-    return await this.stockTrackRepository.save(createStockTrackDto);
+    let stockEntity = await this.stockTrackRepository.save(createStockTrackDto);
+    if (createStockTrackDto.status == StockTrackStatus.STORED) {
+      let stock = await this.stockService.findOne(createStockTrackDto.stock.stock_id);
+      if (stock && stock.product) {
+        let createStockDto = new CreateStockDto();
+        createStockDto.product = { product_id: stock.product.product_id };
+        await this.stockService.fillOrderMissingStocks(createStockDto, [createStockTrackDto]);
+      }
+    }
+    return stockEntity;
   }
 
   async findAll(search: string, currentPage: number, perPage: number) {

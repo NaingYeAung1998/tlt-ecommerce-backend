@@ -6,6 +6,7 @@ export class CreateOrderDto {
     order_date: Date;
     customer_name?: string;
     address?: string;
+    other_charges: number;
     note?: string;
     customer?: CreateOrderCustomerDto;
     items: OrderItem[];

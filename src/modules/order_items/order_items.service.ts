@@ -21,8 +21,12 @@ export class OrderItemsService {
     return `This action returns all orderItems`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} orderItem`;
+  async findByOrder(id: string) {
+    return this.orderItemRepository.find({ where: { order: { order_id: id } }, relations: ['product', 'unit', 'product.per_bag_unit'] });
+  }
+
+  async findOne(id: string) {
+    return this.orderItemRepository.findOne({ where: { order_item_id: id } });
   }
 
   update(id: number, updateOrderItemDto: UpdateOrderItemDto) {
@@ -39,5 +43,13 @@ export class OrderItemsService {
 
   createOrderItemStockBatch(itemStocks: CreateOrderItemStockDto[]) {
     return this.orderItemStockRepository.save(itemStocks);
+  }
+
+  async updateMissingQuantity(id: string, quantity: number) {
+    let item = await this.findOne(id)
+    if (item) {
+      item.missing_quantity = item.missing_quantity - quantity;
+      this.orderItemRepository.save(item);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { StockTrackService } from './stock_track.service';
 import { StockTrackController } from './stock_track.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,7 +7,7 @@ import { UtilityModule } from 'src/core/utility/utility.module';
 import { StockModule } from '../stock/stock.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([StockTrack]), UtilityModule],
+  imports: [TypeOrmModule.forFeature([StockTrack]), UtilityModule, forwardRef(() => StockModule)],
   controllers: [StockTrackController],
   providers: [StockTrackService],
   exports: [StockTrackService]

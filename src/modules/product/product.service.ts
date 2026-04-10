@@ -86,8 +86,16 @@ ORDER BY p.product_code ASC
     }
   }
 
-  findOne(id: string) {
-    return this.productRepository.findOne({ where: { product_id: id }, relations: ['category', 'grade', 'per_bag_unit', 'wholesale_starting_unit'] });
+  async findOne(id: string) {
+    return await this.productRepository.findOne({ where: { product_id: id }, relations: ['category', 'grade', 'per_bag_unit', 'wholesale_starting_unit'] });
+  }
+
+  async updateMissingQuantity(id: string, quantity: number) {
+    let product = await this.findOne(id)
+    if (product) {
+      product.missing_quantity = product.missing_quantity - quantity;
+      this.productRepository.save(product);
+    }
   }
 
   async findProductUnitHiearchy(id: string) {

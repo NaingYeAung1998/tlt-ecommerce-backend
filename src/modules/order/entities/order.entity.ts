@@ -20,6 +20,9 @@ export class Order {
     @Column({ nullable: true })
     address?: string;
 
+    @Column({ type: 'decimal', scale: 2, precision: 18 })
+    other_charges: number;
+
     @Column({ nullable: true })
     note?: string;
 

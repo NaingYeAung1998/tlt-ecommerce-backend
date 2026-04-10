@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +10,11 @@ import { PRODUCT_STOCK_INITIALS } from 'src/core/constants';
 import { StockTrackStatus } from '../stock_track/entities/stock_track.entity';
 import { StockTrackInfoDto, StockTrackListDto } from '../stock_track/dto/stock_track-list.dto';
 import { StockTrackService } from '../stock_track/stock_track.service';
+import { OrderService } from '../order/order.service';
+import { CreateStockTrackDto } from '../stock_track/dto/create-stock_track.dto';
+import { ProductService } from '../product/product.service';
+import { CreateOrderItemStockDto } from '../order_items/dto/create-order_item.dto';
+import { OrderItemsService } from '../order_items/order_items.service';
 
 @Injectable()
 export class StockService {
@@ -17,13 +22,32 @@ export class StockService {
     @InjectRepository(Stock)
     private stockRepository: Repository<Stock>,
     private utilityService: UtilityService,
-    private stockTrackService: StockTrackService
+    @Inject(forwardRef(() => StockTrackService))
+    private stockTrackService: StockTrackService,
+    @Inject(forwardRef(() => OrderService))
+    private orderService: OrderService,
+    private productService: ProductService,
+    private orderItemsService: OrderItemsService
   ) { }
   async create(createStockDto: CreateStockDto) {
     try {
       let stockCount = await this.stockRepository.count();
       createStockDto.stock_code = this.utilityService.formatAutoIncrementCode(PRODUCT_STOCK_INITIALS, stockCount)
-      return this.stockRepository.save(createStockDto);
+      let stock = await this.stockRepository.save(createStockDto);
+      if (createStockDto.stock_tracks && createStockDto.stock_tracks.length > 0) {
+        let createStockTracks: CreateStockTrackDto[] = [];
+        createStockDto.stock_tracks.map((track, index) => {
+          let createStockTrack = new CreateStockTrackDto();
+          createStockTrack.checked_date = track.checked_date;
+          createStockTrack.quantity = track.quantity;
+          createStockTrack.status = track.status;
+          createStockTrack.stock = { stock_id: stock.stock_id };
+          createStockTrack.unit = track.unit;
+          createStockTracks.push(createStockTrack);
+        })
+        await this.fillOrderMissingStocks(createStockDto, createStockTracks);
+      }
+      return createStockDto;
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -74,18 +98,6 @@ export class StockService {
   }
 
   async findBySuppleir(supplier_id: string, search: string) {
-    // let [data, totalLength] = await this.stockRepository.createQueryBuilder("stock")
-    //   .leftJoinAndSelect("stock.product", "product")
-    //   .leftJoinAndSelect("stock.unit", "unit")
-    //   .where("stock.is_delete = :is_delete AND stock.supplier_id = :supplier_id ", { is_delete: false, supplier_id })
-    //   .andWhere((query) => {
-    //     const subQuery = query.subQuery().select("supplier_voucher_stock.stock_id").from("supplier_voucher_stock", "supplier_voucher_stock").getQuery();
-    //     return `stock.stock_id NOT IN ${subQuery}`
-    //   })
-    //   .getManyAndCount();
-
-    // let stockList: StockListDto[] = this.convertStocksToList(data);
-    // return stockList;
     return this.findAll(search, 0, -1, null, supplier_id)
   }
 
@@ -98,19 +110,61 @@ export class StockService {
   }
 
   async update(id: string, updateStockDto: UpdateStockDto) {
-    // let stock = await this.stockRepository.findOne({ where: { stock_id: id }, relations: ['product', 'supplier', 'unit', 'warehouse', 'stock_tracks'] });
-    // if (!stock) {
-    //   throw new HttpException('Cannot find stock', HttpStatus.BAD_REQUEST)
-    // }
-    // await this.stockTrackService.removeBatch(stock.stock_tracks);
-    // stock.stock_tracks = updateStockDto.stock_tracks
-    // return this.stockRepository.save(stock);
     updateStockDto.stock_tracks = undefined;
     return this.stockRepository.update({ stock_id: id }, updateStockDto)
   }
 
   remove(id: number) {
     return `This action removes a #${id} stock`;
+  }
+
+  async fillOrderMissingStocks(createStockDto: CreateStockDto, createStockTracks: CreateStockTrackDto[]) {
+    const missingStockPromises = createStockTracks.map(async (track, index) => {
+      if (track.status == StockTrackStatus.STORED && track.quantity > 0) {
+        let trackRemainingQuantity = track.quantity;
+        let missingStockOrders = await this.orderService.getMissingStockOrders(createStockDto.product.product_id);
+        let productMissingFillUpQuantity = 0;
+        let stockTracks: CreateStockTrackDto[] = [];
+        let orderItemStocks: CreateOrderItemStockDto[] = [];
+        for (let i = 0; i < missingStockOrders.length; i++) {
+          let missingStock = missingStockOrders[i];
+          let missingStockQunatity = parseFloat(missingStock.missing_quantity)
+          let createStockTrackQuantity = 0
+          if (missingStockQunatity > trackRemainingQuantity) {
+            missingStockQunatity = missingStockQunatity - trackRemainingQuantity;
+            createStockTrackQuantity = trackRemainingQuantity;
+            trackRemainingQuantity = 0;
+          } else {
+            trackRemainingQuantity = missingStockQunatity - trackRemainingQuantity;
+            createStockTrackQuantity = missingStockQunatity;
+            missingStockQunatity = 0;
+          }
+          productMissingFillUpQuantity += createStockTrackQuantity;
+          let stockTrack = new CreateStockTrackDto();
+          stockTrack.checked_date = new Date();
+          stockTrack.quantity = createStockTrackQuantity;
+          stockTrack.unit = track.unit;
+          stockTrack.stock = track.stock;
+          stockTrack.warehouse = { warehouse_id: process.env.MAIN_WAREHOUSE_ID };
+          stockTrack.status = StockTrackStatus.SOLD;
+          stockTracks.push(stockTrack);
+          let orderItemStock = new CreateOrderItemStockDto();
+          orderItemStock.order_item = { order_item_id: missingStock.order_item_id };
+          orderItemStock.stock = track.stock;
+          orderItemStock.unit = track.unit;
+          orderItemStock.quantity = createStockTrackQuantity;
+          orderItemStocks.push(orderItemStock);
+          await this.orderItemsService.updateMissingQuantity(missingStock.order_item_id, createStockTrackQuantity);
+          if (trackRemainingQuantity <= 0) {
+            break;
+          }
+        }
+        // await this.productService.updateMissingQuantity(createStockDto.product.product_id, productMissingFillUpQuantity)
+        await this.stockTrackService.createBatch(stockTracks);
+        await this.orderItemsService.createOrderItemStockBatch(orderItemStocks)
+      }
+    })
+    await Promise.all(missingStockPromises);
   }
 
   private convertStocksToList(stocks: Stock[]): StockListDto[] {
