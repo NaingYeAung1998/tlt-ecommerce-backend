@@ -19,6 +19,7 @@ import { CreateOrderItemStockDto } from '../order_items/dto/create-order_item.dt
 import { CreateOrderTrackDto } from '../order-track/dto/create-order-track.dto';
 import { OrderTrackService } from '../order-track/order-track.service';
 import { OrderTrack } from '../order-track/entities/order-track.entity';
+import { PrintService } from './print.service';
 
 @Injectable()
 export class OrderService {
@@ -31,7 +32,8 @@ export class OrderService {
     @Inject(forwardRef(() => StockService))
     private stockService: StockService,
     private stockTrackService: StockTrackService,
-    private orderTrackService: OrderTrackService
+    private orderTrackService: OrderTrackService,
+    private printService: PrintService
   ) { }
   async create(createOrderDto: CreateOrderDto) {
     try {
@@ -193,4 +195,11 @@ export class OrderService {
     const result: MissingStockOrderListDto[] = await this.orderRepository.query(query);
     return result;
   }
+
+  printTest() {
+    console.log("calling print")
+    let data: any = { item: "Test Item", price: "1000" }
+    this.printService.sendPrintJobToClient(data);
+  }
+
 }

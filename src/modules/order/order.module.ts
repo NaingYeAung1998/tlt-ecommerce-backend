@@ -9,11 +9,12 @@ import { OrderPaymentsModule } from '../order_payments/order_payments.module';
 import { StockModule } from '../stock/stock.module';
 import { StockTrackModule } from '../stock_track/stock_track.module';
 import { OrderTrackModule } from '../order-track/order-track.module';
+import { PrintService } from './print.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Order]), UtilityModule, OrderItemsModule, OrderPaymentsModule, forwardRef(() => StockModule), StockTrackModule, OrderTrackModule],
   controllers: [OrderController],
-  providers: [OrderService],
+  providers: [OrderService, PrintService],
   exports: [OrderService]
 })
 export class OrderModule { }
