@@ -14,8 +14,8 @@ export class OrderController {
   }
 
   @Get()
-  findAll(@Query() query: { search: string, currentPage: number, perPage: number }) {
-    return this.orderService.findAll(query.search, query.currentPage, query.perPage);
+  findAll(@Query() query: { search: string, currentPage: number, perPage: number, fromDate?: string, toDate?: string }) {
+    return this.orderService.findAll(query.search, query.currentPage, query.perPage, query.fromDate, query.toDate);
   }
 
   @Get(':id')

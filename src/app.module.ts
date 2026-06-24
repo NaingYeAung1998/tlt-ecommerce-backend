@@ -38,6 +38,7 @@ import { OrderItem } from './modules/order_items/entities/order_item.entity';
 import { OrderPayment } from './modules/order_payments/entities/order_payment.entity';
 import { OrderTrackModule } from './modules/order-track/order-track.module';
 import { OrderTrack } from './modules/order-track/entities/order-track.entity';
+import { ReportModule } from './modules/report/report.module';
 
 
 
@@ -59,7 +60,7 @@ import { OrderTrack } from './modules/order-track/entities/order-track.entity';
       logger: 'file',
       logging: ["error"]
     }),
-    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule, CustomerModule, OrderModule, SupplierVoucherModule, SupplierVoucherStocksModule, SupplierVoucherPaymentsModule, OrderItemsModule, OrderPaymentsModule, OrderTrackModule],
+    SupplierModule, UtilityModule, CategoryModule, GradeModule, UnitModule, ProductModule, StockModule, WarehouseModule, StockPaymentModule, StockTrackModule, CustomerModule, OrderModule, SupplierVoucherModule, SupplierVoucherStocksModule, SupplierVoucherPaymentsModule, OrderItemsModule, OrderPaymentsModule, OrderTrackModule, ReportModule],
   controllers: [AppController],
   providers: [AppService],
 })

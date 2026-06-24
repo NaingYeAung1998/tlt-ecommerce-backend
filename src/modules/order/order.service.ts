@@ -20,6 +20,8 @@ import { CreateOrderTrackDto } from '../order-track/dto/create-order-track.dto';
 import { OrderTrackService } from '../order-track/order-track.service';
 import { OrderTrack } from '../order-track/entities/order-track.entity';
 import { PrintService } from './print.service';
+import { CustomerService } from '../customer/customer.service';
+import { CreateCustomerDto } from '../customer/dto/create-customer.dto';
 
 @Injectable()
 export class OrderService {
@@ -33,7 +35,8 @@ export class OrderService {
     private stockService: StockService,
     private stockTrackService: StockTrackService,
     private orderTrackService: OrderTrackService,
-    private printService: PrintService
+    private printService: PrintService,
+    private customerService: CustomerService
   ) { }
   async create(createOrderDto: CreateOrderDto) {
     try {
@@ -84,6 +87,13 @@ export class OrderService {
 
       })
       await Promise.all(orderItemPromises);
+      if (!createOrderDto.customer) {
+        const createCustomerDto = new CreateCustomerDto();
+        createCustomerDto.customer_name = createOrderDto.customer_name;
+        createCustomerDto.customer_address = createOrderDto.address;
+        const customer = await this.customerService.create(createCustomerDto);
+        createOrderDto.customer = { customer_id: customer.customer_id }
+      }
       await this.orderRepository.save(createOrderDto);
       await this.stockTrackService.createBatch(stockTracks);
       return await this.orderItemService.createOrderItemStockBatch(orderItemStocks);
@@ -92,29 +102,79 @@ export class OrderService {
     }
   }
 
-  async findAll(search: string, currentPage: number, perPage: number) {
-    let data: OrderListDto[] = await this.orderRepository.createQueryBuilder("customer_order")
-      .select("customer_order.*")
-      .addSelect("order_items.selling_amount", "total_amount")
-      .addSelect("SUM(order_payment.amount)", "total_paid")
-      .addSelect("COUNT(DISTINCT customer_order.order_id)", "count")
-      .addSelect("customer.customer_name", "customer_relation_name")
-      .leftJoin("customer_order.customer", "customer")
-      .leftJoin("customer_order.payments", "order_payment")
-      .leftJoin(subQuery => {
-        return subQuery
-          .select('customer_order.order_id', "order_id")
-          .addSelect('SUM(order_item.selling_price)', 'selling_amount')
-          .from("order", "customer_order")
-          .leftJoin("customer_order.items", "order_item")
-          .groupBy('order_id');
-      }, "order_items", "customer_order.order_id = order_items.order_id")
-      .groupBy("customer_order.order_id, customer_relation_name, total_amount")
-      .where("customer_order.is_delete = :isDelete", { isDelete: false })
-      .orderBy("customer_order.updated_on", 'DESC')
-      .skip(currentPage * perPage)
-      .take(perPage)
-      .getRawMany()
+  async findAll(search: string, currentPage: number, perPage: number, fromDate?: string, toDate?: string) {
+    // let data: OrderListDto[] = await this.orderRepository.createQueryBuilder("customer_order")
+    //   .select("customer_order.*")
+    //   .addSelect("order_items.selling_amount", "total_amount")
+    //   .addSelect("SUM(order_payment.amount)", "total_paid")
+    //   .addSelect("COUNT(DISTINCT customer_order.order_id)", "count")
+    //   .addSelect("customer.customer_name", "customer_relation_name")
+    //   .leftJoin("customer_order.customer", "customer")
+    //   .leftJoin("customer_order.payments", "order_payment")
+    //   .leftJoin(subQuery => {
+    //     return subQuery
+    //       .select('customer_order.order_id', "order_id")
+    //       .addSelect('SUM(order_item.selling_price)', 'selling_amount')
+    //       .from("order", "customer_order")
+    //       .leftJoin("customer_order.items", "order_item")
+    //       .groupBy('order_id');
+    //   }, "order_items", "customer_order.order_id = order_items.order_id")
+    //   .groupBy("customer_order.order_id, customer_relation_name, total_amount")
+    //   .where("customer_order.is_delete = :isDelete", { isDelete: false })
+    //   .orderBy("customer_order.updated_on", 'DESC')
+    //   .skip(currentPage * perPage)
+    //   .take(perPage)
+    //   .getRawMany()
+
+    let rawSql = `
+    SELECT
+    customer_order.*,
+    order_items.selling_amount AS total_amount,
+    SUM(order_payment.amount) AS total_paid,
+    COUNT(DISTINCT customer_order.order_id) AS count,
+    customer.customer_name AS customer_relation_name
+    FROM \`order\` customer_order
+
+    LEFT JOIN customer
+        ON customer.customer_id = customer_order.customer_id
+
+    LEFT JOIN order_payment
+        ON order_payment.order_id = customer_order.order_id
+
+    LEFT JOIN (
+        SELECT
+            customer_order.order_id,
+            SUM(order_item.selling_price) AS selling_amount
+        FROM \`order\` customer_order
+        LEFT JOIN order_item
+            ON order_item.order_id = customer_order.order_id
+        GROUP BY customer_order.order_id
+    ) order_items
+        ON customer_order.order_id = order_items.order_id
+
+    WHERE customer_order.is_delete = FALSE
+    `
+
+    if (fromDate && toDate) {
+      rawSql += `
+        AND customer_order.created_on >= '${fromDate}' AND customer_order.created_on <= '${toDate}'
+      `
+    }
+
+    rawSql += `GROUP BY
+        customer_order.order_id,
+        customer.customer_name,
+        order_items.selling_amount
+
+    ORDER BY customer_order.updated_on DESC `
+
+    if (perPage >= 0) {
+      rawSql += `LIMIT ${perPage}
+    OFFSET ${currentPage * perPage};`
+    }
+
+    let data: OrderListDto[] = await this.orderRepository.query(rawSql);
+
     let totalLength = data[0] ? data[0].count : 0
     return this.utilityService.createPaginationList(data, currentPage, perPage, totalLength)
   }
