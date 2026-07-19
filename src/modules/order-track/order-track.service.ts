@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrderTrackDto } from './dto/create-order-track.dto';
 import { UpdateOrderTrackDto } from './dto/update-order-track.dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { OrderTrack } from './entities/order-track.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -37,5 +37,21 @@ export class OrderTrackService {
 
   removeBatch(orderTracks: OrderTrack[]) {
     return this.orderTrackRepository.remove(orderTracks);
+  }
+
+  async itemsAlreadyTracked(orderItemIds: String[]) {
+    if (!orderItemIds?.length) {
+      return false;
+    }
+
+    const count = await this.orderTrackRepository.count({
+      where: {
+        order_item: {
+          order_item_id: In(orderItemIds)
+        },
+      },
+    });
+
+    return count > 0;
   }
 }

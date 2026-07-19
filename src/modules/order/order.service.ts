@@ -188,9 +188,15 @@ export class OrderService {
     if (!order) {
       throw new HttpException('Cannot find order', HttpStatus.BAD_REQUEST)
     }
-    await this.orderPaymentService.removeBatch(order.payments);
+
+    const itemsAlreadyTracked = await this.orderTrackService.itemsAlreadyTracked(order.items.map((item) => item.order_item_id))
+    if(itemsAlreadyTracked){
+      throw new HttpException('Items are already tracked', HttpStatus.BAD_REQUEST)
+    }
+
+    // await this.orderPaymentService.removeBatch(order.payments);
     await this.orderItemService.removeBatch(order.items);
-    order.payments = updateOrderDto.payments;
+    // order.payments = updateOrderDto.payments;
     order.items = updateOrderDto.items
     return this.orderRepository.save(order);
   }
