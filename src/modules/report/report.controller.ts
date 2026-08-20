@@ -13,4 +13,35 @@ export class ReportController {
   getStockReport(@Query() query: { search: string, currentPage: number, perPage: number }) {
     return this.reportService.getStockReport('', query.currentPage, query.perPage);
   }
+
+  @Get('/daily-sales-summary')
+  getDailySalesSummary(@Query() query: { date: string, customerId?: string }) {
+    return this.reportService.getDailySalesSummary(query.date, query.customerId);
+  }
+
+  @Get('/product-sales')
+  getProductSales(@Query() query: {
+    fromDate: string,
+    toDate: string,
+    categoryId?: string,
+    productId?: string,
+    sortBy?: 'best-sellers' | 'slow-movers',
+    currentPage?: number,
+    perPage?: number
+  }) {
+    return this.reportService.getProductSalesReport(query);
+  }
+
+  @Get('/inventory')
+  getInventoryReport(@Query() query: {
+    warehouseId?: string,
+    categoryId?: string,
+    productId?: string,
+    supplierId?: string,
+    sortBy?: 'code' | 'highest' | 'lowest',
+    currentPage?: number,
+    perPage?: number
+  }) {
+    return this.reportService.getInventoryReport(query);
+  }
 }
