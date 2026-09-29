@@ -1,4 +1,4 @@
-import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -38,8 +38,41 @@ export class OrderService {
     private printService: PrintService,
     private customerService: CustomerService
   ) { }
+
+  private validateOrderValues(order: CreateOrderDto | UpdateOrderDto) {
+    const otherCharges = Number(order.other_charges ?? 0);
+    if (!Number.isFinite(otherCharges) || otherCharges < 0 || otherCharges > Number.MAX_SAFE_INTEGER) {
+      throw new BadRequestException('Other charges must be a nonnegative valid amount');
+    }
+
+    if (!Array.isArray(order.items) || order.items.length === 0) {
+      throw new BadRequestException('At least one order item is required');
+    }
+
+    order.items.forEach((item, index) => {
+      const itemNumber = index + 1;
+      if (!item?.product?.product_id) {
+        throw new BadRequestException(`Product is required for item ${itemNumber}`);
+      }
+      if (!item?.unit?.unit_id) {
+        throw new BadRequestException(`Unit is required for item ${itemNumber}`);
+      }
+
+      const quantity = Number(item.quantity);
+      if (!Number.isFinite(quantity) || quantity <= 0 || quantity > Number.MAX_SAFE_INTEGER) {
+        throw new BadRequestException(`Quantity must be greater than zero for item ${itemNumber}`);
+      }
+
+      const sellingPrice = Number(item.selling_price);
+      if (!Number.isFinite(sellingPrice) || sellingPrice < 0 || sellingPrice > Number.MAX_SAFE_INTEGER) {
+        throw new BadRequestException(`Selling price must be a nonnegative valid amount for item ${itemNumber}`);
+      }
+    });
+  }
+
   async create(createOrderDto: CreateOrderDto) {
     try {
+      this.validateOrderValues(createOrderDto);
       let orderCount = await this.orderRepository.count();
       createOrderDto.voucher_code = this.utilityService.formatAutoIncrementCode(CUSTOMER_VOUCHER_INITIALS, orderCount)
       let stockTracks: CreateStockTrackDto[] = [];
@@ -98,6 +131,9 @@ export class OrderService {
       await this.stockTrackService.createBatch(stockTracks);
       return await this.orderItemService.createOrderItemStockBatch(orderItemStocks);
     } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -189,8 +225,10 @@ export class OrderService {
       throw new HttpException('Cannot find order', HttpStatus.BAD_REQUEST)
     }
 
+    this.validateOrderValues(updateOrderDto);
+
     const itemsAlreadyTracked = await this.orderTrackService.itemsAlreadyTracked(order.items.map((item) => item.order_item_id))
-    if(itemsAlreadyTracked){
+    if (itemsAlreadyTracked) {
       throw new HttpException('Items are already tracked', HttpStatus.BAD_REQUEST)
     }
 
